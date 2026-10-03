@@ -203,20 +203,14 @@ export function downloadExcelTemplate() {
     {
       "Nama Tamu": "Budi Santoso",
       "Nomor Telepon": "08123456789",
-      "Link Undangan (Opsional)":
-        "https://andricica.mohaproject.tech/Budi+Santoso",
     },
     {
       "Nama Tamu": "Siti Rahma",
       "Nomor Telepon": "08571234567",
-      "Link Undangan (Opsional)":
-        "https://andricica.mohaproject.tech/Siti+Rahma",
     },
     {
       "Nama Tamu": "Ahmad Dahlan",
       "Nomor Telepon": "08219876543",
-      "Link Undangan (Opsional)":
-        "https://andricica.mohaproject.tech/Ahmad+Dahlan",
     },
   ];
 
@@ -225,7 +219,7 @@ export function downloadExcelTemplate() {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Daftar Tamu");
 
   // Set column widths
-  worksheet["!cols"] = [{ wch: 25 }, { wch: 20 }, { wch: 45 }];
+  worksheet["!cols"] = [{ wch: 25 }, { wch: 20 }];
 
   XLSX.writeFile(workbook, "Template_Daftar_Tamu_Undangan.xlsx");
 }

@@ -212,7 +212,7 @@ Daftar tamu dapat dimasukkan dengan 2 cara:
 
 1. **Upload File Excel (`.xlsx`, `.xls`, `.csv`)**:
    - Klik **"Download Contoh Format"** untuk mengunduh template tabel.
-   - Kolom yang didukung otomatis: `Nama Tamu`, `Nomor Telepon` (otomatis dikonversi ke format 62xxx), dan `Link Undangan` (opsional kustom).
+   - Kolom yang didukung otomatis: `Nama Tamu` dan `Nomor Telepon` (otomatis dikonversi ke format 62xxx). Link undangan otomatis dibuatkan oleh sistem berdasarkan format URL yang Anda setting.
 2. **Ketik / Paste Teks Manual**:
    - Format: `Nama, Nomor` (contoh: `Budi Santoso, 08123456789`).
 
