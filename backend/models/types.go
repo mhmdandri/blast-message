@@ -14,6 +14,7 @@ type BroadcastRequest struct {
 	SessionID       string  `json:"sessionId" binding:"required"`
 	Guests          []Guest `json:"guests" binding:"required,gt=0"`
 	TemplateMessage string  `json:"templateMessage" binding:"required"`
+	LinkPreview     *bool   `json:"linkPreview,omitempty"`
 }
 
 // BroadcastLog details per guest
@@ -62,9 +63,11 @@ type WahaCreateSessionPayload struct {
 
 // WAHA Send Text Payload
 type WahaSendTextPayload struct {
-	Session string `json:"session"`
-	ChatID  string `json:"chatId"`
-	Text    string `json:"text"`
+	Session                string `json:"session"`
+	ChatID                 string `json:"chatId"`
+	Text                   string `json:"text"`
+	LinkPreview            bool   `json:"linkPreview"`
+	LinkPreviewHighQuality bool   `json:"linkPreviewHighQuality,omitempty"`
 }
 
 // WAHA Session Info Response

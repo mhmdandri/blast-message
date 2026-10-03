@@ -237,11 +237,13 @@ func (w *WahaClient) GetQRCode(sessionID string) (qrDataUri string, rawImage []b
 }
 
 // SendTextMessage sends a WhatsApp text message via POST /api/sendText
-func (w *WahaClient) SendTextMessage(sessionID, chatId, text string) error {
+func (w *WahaClient) SendTextMessage(sessionID, chatId, text string, linkPreview bool) error {
 	payload := models.WahaSendTextPayload{
-		Session: sessionID,
-		ChatID:  chatId,
-		Text:    text,
+		Session:                sessionID,
+		ChatID:                 chatId,
+		Text:                   text,
+		LinkPreview:            linkPreview,
+		LinkPreviewHighQuality: linkPreview,
 	}
 
 	jsonBytes, err := json.Marshal(payload)

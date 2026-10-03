@@ -204,19 +204,19 @@ export function downloadExcelTemplate() {
       "Nama Tamu": "Budi Santoso",
       "Nomor Telepon": "08123456789",
       "Link Undangan (Opsional)":
-        "https://undangan-blond-alpha.vercel.app/Budi Santoso",
+        "https://andricica.mohaproject.tech/Budi+Santoso",
     },
     {
       "Nama Tamu": "Siti Rahma",
       "Nomor Telepon": "08571234567",
       "Link Undangan (Opsional)":
-        "https://undangan-blond-alpha.vercel.app/Siti Rahma",
+        "https://andricica.mohaproject.tech/Siti+Rahma",
     },
     {
       "Nama Tamu": "Ahmad Dahlan",
       "Nomor Telepon": "08219876543",
       "Link Undangan (Opsional)":
-        "https://undangan-blond-alpha.vercel.app/Ahmad Dahlan",
+        "https://andricica.mohaproject.tech/Ahmad+Dahlan",
     },
   ];
 

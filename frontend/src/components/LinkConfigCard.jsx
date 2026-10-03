@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link2, ExternalLink, Sparkles, Code2 } from 'lucide-react';
+import { Link2, ExternalLink, Sparkles } from 'lucide-react';
 import { generateGuestLink } from '../utils/helpers';
 
 export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
@@ -9,24 +9,19 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
 
   const presets = [
     {
-      label: 'Query Parameter (+)',
-      format: 'https://undangan-blond-alpha.vercel.app/?to={nama_encoded}',
-      example: 'https://undangan-blond-alpha.vercel.app/?to=Budi+Santoso',
-    },
-    {
-      label: 'Query Parameter (Spasi)',
-      format: 'https://undangan-blond-alpha.vercel.app/?to={nama}',
-      example: 'https://undangan-blond-alpha.vercel.app/?to=Budi Santoso',
-    },
-    {
-      label: 'Path / Tamu / Slug',
-      format: 'https://undangan-blond-alpha.vercel.app/tamu/{slug}',
-      example: 'https://undangan-blond-alpha.vercel.app/tamu/budi-santoso',
+      label: 'Direct Nama (+)',
+      format: 'https://andricica.mohaproject.tech/{nama_encoded}',
+      example: 'https://andricica.mohaproject.tech/Budi+Santoso',
     },
     {
       label: 'Direct Slug',
-      format: 'https://undangan-blond-alpha.vercel.app/{slug}',
-      example: 'https://undangan-blond-alpha.vercel.app/budi-santoso',
+      format: 'https://andricica.mohaproject.tech/{slug}',
+      example: 'https://andricica.mohaproject.tech/budi-santoso',
+    },
+    {
+      label: 'Query Parameter',
+      format: 'https://andricica.mohaproject.tech/?to={nama_encoded}',
+      example: 'https://andricica.mohaproject.tech/?to=Budi+Santoso',
     },
   ];
 
@@ -41,6 +36,10 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
             <h3 className="text-sm sm:text-base font-bold text-slate-100">Konfigurasi Format Link Undangan Digital</h3>
             <p className="text-[11px] sm:text-xs text-slate-400">Variabel <code className="text-indigo-400 font-mono">&#123;link&#125;</code> di pesan akan menyesuaikan nama tamu</p>
           </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Metadata Preview Aktif</span>
         </div>
       </div>
 
@@ -72,7 +71,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
             type="text"
             value={linkFormat}
             onChange={(e) => setLinkFormat(e.target.value)}
-            placeholder="https://undangan-blond-alpha.vercel.app/?to={nama_encoded}"
+            placeholder="https://andricica.mohaproject.tech/{nama_encoded}"
             className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm font-mono focus:border-indigo-500 outline-none"
           />
         </div>

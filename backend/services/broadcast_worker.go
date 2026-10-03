@@ -125,7 +125,12 @@ func (s *BroadcastService) runWorker(broadcastID string, req models.BroadcastReq
 		chatID := NormalizePhone(guest.Phone)
 		messageText := FormatMessage(req.TemplateMessage, guest)
 
-		err := s.wahaClient.SendTextMessage(req.SessionID, chatID, messageText)
+		enableLinkPreview := true
+		if req.LinkPreview != nil {
+			enableLinkPreview = *req.LinkPreview
+		}
+
+		err := s.wahaClient.SendTextMessage(req.SessionID, chatID, messageText, enableLinkPreview)
 
 		s.mu.Lock()
 		progress, exists := s.store[broadcastID]

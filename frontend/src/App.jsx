@@ -25,11 +25,13 @@ export default function App() {
   const [isQrLoading, setIsQrLoading] = useState(false);
 
   // Link Format State
-  const [linkFormat, setLinkFormat] = useState(
-    () =>
-      localStorage.getItem("waha_link_format") ||
-      "https://undangan-blond-alpha.vercel.app/{nama_encoded}",
-  );
+  const [linkFormat, setLinkFormat] = useState(() => {
+    const saved = localStorage.getItem("waha_link_format");
+    if (!saved || saved.includes("undangan-blond-alpha.vercel.app")) {
+      return "https://andricica.mohaproject.tech/{nama_encoded}";
+    }
+    return saved;
+  });
 
   useEffect(() => {
     localStorage.setItem("waha_link_format", linkFormat);
@@ -171,6 +173,7 @@ export default function App() {
         sessionId: sessionId,
         guests: preparedGuests,
         templateMessage: templateMessage,
+        linkPreview: true,
       };
 
       const resp = await axiosClient.post("/messages/broadcast", payload);
