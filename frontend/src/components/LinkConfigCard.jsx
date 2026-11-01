@@ -9,19 +9,19 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
 
   const presets = [
     {
-      label: 'Direct Nama (+)',
-      format: 'https://andricica.mohaproject.tech/{nama_encoded}',
-      example: 'https://andricica.mohaproject.tech/Budi+Santoso',
+      label: 'Direct Nama (%20)',
+      format: 'https://weddingofandricica.me/{nama_encoded}',
+      example: 'https://weddingofandricica.me/Budi%20Santoso',
     },
     {
       label: 'Direct Slug',
-      format: 'https://andricica.mohaproject.tech/{slug}',
-      example: 'https://andricica.mohaproject.tech/budi-santoso',
+      format: 'https://weddingofandricica.me/{slug}',
+      example: 'https://weddingofandricica.me/budi-santoso',
     },
     {
       label: 'Query Parameter',
-      format: 'https://andricica.mohaproject.tech/?to={nama_encoded}',
-      example: 'https://andricica.mohaproject.tech/?to=Budi+Santoso',
+      format: 'https://weddingofandricica.me/?to={nama_encoded}',
+      example: 'https://weddingofandricica.me/?to=Budi%20Santoso',
     },
   ];
 
@@ -71,7 +71,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
             type="text"
             value={linkFormat}
             onChange={(e) => setLinkFormat(e.target.value)}
-            placeholder="https://andricica.mohaproject.tech/{nama_encoded}"
+            placeholder="https://weddingofandricica.me/{nama_encoded}"
             className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm font-mono focus:border-indigo-500 outline-none"
           />
         </div>

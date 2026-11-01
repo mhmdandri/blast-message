@@ -81,14 +81,14 @@ export function slugify(str) {
 /**
  * Generates dynamic invitation link for a guest based on format template
  * Format examples:
- * - "https://undangan.com/?to={nama_encoded}" -> "https://undangan.com/?to=Budi+Santoso"
+ * - "https://undangan.com/?to={nama_encoded}" -> "https://undangan.com/?to=Budi%20Santoso"
  * - "https://undangan.com/tamu/{slug}" -> "https://undangan.com/tamu/budi-santoso"
  */
 export function generateGuestLink(linkFormat, name, phone) {
   if (!linkFormat) return "";
   let link = linkFormat;
   const nameSlug = slugify(name);
-  const nameEncoded = encodeURIComponent(name || "").replace(/%20/g, "+");
+  const nameEncoded = encodeURIComponent(name || "");
   const nameRaw = name || "";
 
   link = link.replace(/\{nama_encoded\}/gi, nameEncoded);

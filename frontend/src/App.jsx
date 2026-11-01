@@ -27,8 +27,8 @@ export default function App() {
   // Link Format State
   const [linkFormat, setLinkFormat] = useState(() => {
     const saved = localStorage.getItem("waha_link_format");
-    if (!saved || saved.includes("undangan-blond-alpha.vercel.app")) {
-      return "https://andricica.mohaproject.tech/{nama_encoded}";
+    if (!saved || saved.includes("undangan-blond-alpha.vercel.app") || saved.includes("andricica.mohaproject.tech")) {
+      return "https://weddingofandricica.me/{nama_encoded}";
     }
     return saved;
   });

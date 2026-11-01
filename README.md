@@ -202,7 +202,7 @@ Sebelum menjalankan aplikasi, pastikan perangkat Anda telah terinstall:
 
 Di kartu **Konfigurasi Format Link Undangan Digital**, tentukan format URL website undangan Anda:
 
-- **Format Parameter**: `https://undangan-anda.com/?to={nama_encoded}` _(Contoh: `.../?to=Budi+Santoso`)_
+- **Format Parameter**: `https://undangan-anda.com/?to={nama_encoded}` _(Contoh: `.../?to=Budi%20Santoso`)_
 - **Format Path / Slug**: `https://undangan-anda.com/tamu/{slug}` _(Contoh: `.../tamu/budi-santoso`)_
 - Klik tombol **"Tes Buka"** untuk memvalidasi apakah tautan undangan terbuka dengan benar di browser.
 
@@ -224,7 +224,7 @@ Kustomisasi pesan menggunakan tag variabel:
 - `{link}` : Tautan website undangan yang sudah digenerate khusus untuk tamu tersebut
 - `{nomor}`: Nomor WhatsApp tamu
 - `{slug}` : Nama format URL-friendly (contoh: `budi-santoso`)
-- `{nama_encoded}` : Nama berformat URL query `+` (contoh: `Budi+Santoso`)
+- `{nama_encoded}` : Nama berformat URL encoded `%20` (contoh: `Budi%20Santoso`)
 
 Tersedia tombol **"Pratinjau di HP"** untuk melihat simulasi visual tampilan chat WhatsApp sebelum pesan disebarkan.
 
@@ -282,7 +282,7 @@ Agar link undangan menampilkan **kartu metadata (judul, deskripsi ringkas, dan g
    > - **URL:** Wajib menggunakan protokol `https://` absolut.
 
 4. **Hindari Spasi Mentah di URL**:
-   Jangan gunakan spasi kosong di tengah URL (misal `?to=Budi Santoso`), karena WhatsApp memotong tautan pada spasi pertama. Gunakan `{nama_encoded}` (`?to=Budi+Santoso`) atau `{slug}` (`/tamu/budi-santoso`).
+   Jangan gunakan spasi kosong di tengah URL (misal `?to=Budi Santoso`), karena WhatsApp memotong tautan pada spasi pertama. Gunakan `{nama_encoded}` (`?to=Budi%20Santoso`) atau `{slug}` (`/tamu/budi-santoso`).
 
 5. **Kebijakan Anti-Spam WhatsApp di Sisi Tamu**:
    Jika nomor pengirim belum disimpan di buku kontak penerima (_unknown contact_), aplikasi WhatsApp di HP penerima kadang secara bawaan menyembunyikan gambar kartu preview hingga penerima berinteraksi atau menyimpan kontak.

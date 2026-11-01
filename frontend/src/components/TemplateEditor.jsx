@@ -118,7 +118,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
     { tag: "{link}", label: "Link Undangan", desc: "Tautan unik per tamu", color: "emerald" },
     { tag: "{nomor}", label: "No. WhatsApp", desc: "08xxx / 628xxx", color: "purple" },
     { tag: "{slug}", label: "Slug Nama", desc: "budi-santoso", color: "blue" },
-    { tag: "{nama_encoded}", label: "Nama Query (+)", desc: "Budi+Santoso", color: "sky" },
+    { tag: "{nama_encoded}", label: "Nama Query (%20)", desc: "Budi%20Santoso", color: "sky" },
   ];
 
   // Preview with sample data
@@ -132,7 +132,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
     .replace(/\{nomor\}/gi, samplePhone)
     .replace(/\{phone\}/gi, samplePhone)
     .replace(/\{slug\}/gi, slugify(sampleName))
-    .replace(/\{nama_encoded\}/gi, "Budi+Santoso")
+    .replace(/\{nama_encoded\}/gi, "Budi%20Santoso")
     .replace(/\{link\}/gi, sampleLink)
     .replace(/\{url\}/gi, sampleLink);
 

@@ -59,7 +59,7 @@ func Slugify(s string) string {
 func FormatMessage(template string, guest models.Guest) string {
 	msg := template
 	nameSlug := Slugify(guest.Name)
-	nameEncoded := strings.ReplaceAll(guest.Name, " ", "+")
+	nameEncoded := strings.ReplaceAll(guest.Name, " ", "%20")
 
 	msg = strings.ReplaceAll(msg, "{nama}", guest.Name)
 	msg = strings.ReplaceAll(msg, "{NAMA}", guest.Name)
