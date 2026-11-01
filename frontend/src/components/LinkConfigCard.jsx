@@ -3,25 +3,31 @@ import { Link2, ExternalLink, Sparkles } from 'lucide-react';
 import { generateGuestLink } from '../utils/helpers';
 
 export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
-  const sampleName = 'Budi Santoso';
+  const sampleName = 'Wulan & Partner';
   const samplePhone = '08123456789';
-  const sampleGeneratedLink = generateGuestLink(linkFormat, sampleName, samplePhone);
+  const sampleCode = '01197';
+  const sampleGeneratedLink = generateGuestLink(linkFormat, sampleName, samplePhone, sampleCode);
 
   const presets = [
     {
-      label: 'Direct Nama (%20)',
-      format: 'https://weddingofandricica.me/{nama_encoded}',
-      example: 'https://weddingofandricica.me/Budi%20Santoso',
+      label: 'Direct Nama + Code (%20)',
+      format: 'https://weddingofandricica.me/{nama_encoded}?code={code}',
+      example: 'https://weddingofandricica.me/Wulan%20%26%20Partner?code=01197',
     },
     {
-      label: 'Direct Slug',
-      format: 'https://weddingofandricica.me/{slug}',
-      example: 'https://weddingofandricica.me/budi-santoso',
+      label: 'Direct Slug + Code',
+      format: 'https://weddingofandricica.me/{slug}?code={code}',
+      example: 'https://weddingofandricica.me/wulan-partner?code=01197',
     },
     {
       label: 'Query Parameter',
-      format: 'https://weddingofandricica.me/?to={nama_encoded}',
-      example: 'https://weddingofandricica.me/?to=Budi%20Santoso',
+      format: 'https://weddingofandricica.me/?to={nama_encoded}&code={code}',
+      example: 'https://weddingofandricica.me/?to=Wulan%20%26%20Partner&code=01197',
+    },
+    {
+      label: 'Tanpa Code (Hanya Nama)',
+      format: 'https://weddingofandricica.me/{nama_encoded}',
+      example: 'https://weddingofandricica.me/Wulan%20%26%20Partner',
     },
   ];
 
@@ -34,7 +40,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-slate-100">Konfigurasi Format Link Undangan Digital</h3>
-            <p className="text-[11px] sm:text-xs text-slate-400">Variabel <code className="text-indigo-400 font-mono">&#123;link&#125;</code> di pesan akan menyesuaikan nama tamu</p>
+            <p className="text-[11px] sm:text-xs text-slate-400">Variabel <code className="text-indigo-400 font-mono">&#123;link&#125;</code> di pesan akan menyesuaikan nama tamu &amp; kode unik</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
@@ -63,7 +69,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
         <label className="text-xs font-semibold text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <span>Format URL / Domain Undangan Anda:</span>
           <span className="text-[10px] sm:text-[11px] text-slate-500 font-normal">
-            Gunakan: <code className="text-indigo-400">&#123;nama_encoded&#125;</code>, <code className="text-indigo-400">&#123;nama&#125;</code>, atau <code className="text-indigo-400">&#123;slug&#125;</code>
+            Gunakan: <code className="text-indigo-400">&#123;nama_encoded&#125;</code>, <code className="text-indigo-400">&#123;code&#125;</code>, <code className="text-indigo-400">&#123;slug&#125;</code>, atau <code className="text-indigo-400">&#123;nama&#125;</code>
           </span>
         </label>
         <div className="relative">
@@ -71,7 +77,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
             type="text"
             value={linkFormat}
             onChange={(e) => setLinkFormat(e.target.value)}
-            placeholder="https://weddingofandricica.me/{nama_encoded}"
+            placeholder="https://weddingofandricica.me/{nama_encoded}?code={code}"
             className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm font-mono focus:border-indigo-500 outline-none"
           />
         </div>
@@ -81,7 +87,7 @@ export default function LinkConfigCard({ linkFormat, setLinkFormat }) {
       <div className="p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2.5">
         <div className="truncate min-w-0">
           <span className="text-slate-400 block text-[10px] sm:text-[11px] font-medium mb-0.5">
-            Hasil Generasi Link untuk Contoh Tamu ({sampleName}):
+            Hasil Generasi Link untuk Contoh Tamu ({sampleName} - Code: {sampleCode}):
           </span>
           <span className="font-mono text-emerald-400 font-semibold truncate block text-xs">
             {sampleGeneratedLink || <span className="italic text-slate-600">URL format belum diisi...</span>}

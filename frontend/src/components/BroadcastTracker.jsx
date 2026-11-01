@@ -28,9 +28,9 @@ export default function BroadcastTracker({
 
   const handleExportLogCsv = () => {
     if (rawLogs.length === 0) return;
-    let csvContent = 'data:text/csv;charset=utf-8,Nama Tamu,Nomor Telepon,Status,Waktu Kirim,Catatan Error\n';
+    let csvContent = 'data:text/csv;charset=utf-8,Nama Tamu,Nomor Telepon,Code,Status,Waktu Kirim,Catatan Error\n';
     rawLogs.forEach((l) => {
-      const row = `"${l.guestName}","${l.phone}","${l.status}","${l.sentAt || ''}","${l.error || ''}"`;
+      const row = `"${l.guestName}","${l.phone}","${l.code || ''}","${l.status}","${l.sentAt || ''}","${l.error || ''}"`;
       csvContent += row + '\n';
     });
     const encodedUri = encodeURI(csvContent);
@@ -199,7 +199,9 @@ export default function BroadcastTracker({
 
                       <div className="truncate">
                         <span className="font-semibold text-slate-200 truncate block sm:inline">{log.guestName}</span>
-                        <span className="text-slate-500 text-[10px] sm:text-[11px] sm:ml-2 font-mono truncate block sm:inline">({log.phone})</span>
+                        <span className="text-slate-500 text-[10px] sm:text-[11px] sm:ml-2 font-mono truncate block sm:inline">
+                          ({log.phone}{log.code ? ` • Code: ${log.code}` : ''})
+                        </span>
                         {log.error && <p className="text-[10px] text-rose-400 mt-0.5 truncate">{log.error}</p>}
                       </div>
                     </div>

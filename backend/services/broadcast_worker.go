@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"math/rand"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -55,11 +56,12 @@ func Slugify(s string) string {
 	return reSpace.ReplaceAllString(s, "-")
 }
 
-// FormatMessage replaces placeholders like {nama}, {name}, {nomor}, {phone}, {link}, {url}, {slug}, {nama_encoded}
+// FormatMessage replaces placeholders like {nama}, {name}, {nomor}, {phone}, {link}, {url}, {slug}, {nama_encoded}, {code}, {kode}
 func FormatMessage(template string, guest models.Guest) string {
 	msg := template
 	nameSlug := Slugify(guest.Name)
-	nameEncoded := strings.ReplaceAll(guest.Name, " ", "%20")
+	nameEncoded := strings.ReplaceAll(url.QueryEscape(guest.Name), "+", "%20")
+	codeEncoded := strings.ReplaceAll(url.QueryEscape(guest.Code), "+", "%20")
 
 	msg = strings.ReplaceAll(msg, "{nama}", guest.Name)
 	msg = strings.ReplaceAll(msg, "{NAMA}", guest.Name)
@@ -69,6 +71,11 @@ func FormatMessage(template string, guest models.Guest) string {
 	msg = strings.ReplaceAll(msg, "{phone}", guest.Phone)
 	msg = strings.ReplaceAll(msg, "{slug}", nameSlug)
 	msg = strings.ReplaceAll(msg, "{nama_encoded}", nameEncoded)
+	msg = strings.ReplaceAll(msg, "{code_encoded}", codeEncoded)
+	msg = strings.ReplaceAll(msg, "{code}", guest.Code)
+	msg = strings.ReplaceAll(msg, "{CODE}", guest.Code)
+	msg = strings.ReplaceAll(msg, "{kode}", guest.Code)
+	msg = strings.ReplaceAll(msg, "{KODE}", guest.Code)
 	msg = strings.ReplaceAll(msg, "{link}", guest.Link)
 	msg = strings.ReplaceAll(msg, "{LINK}", guest.Link)
 	msg = strings.ReplaceAll(msg, "{url}", guest.Link)
@@ -85,6 +92,7 @@ func (s *BroadcastService) StartBroadcast(req models.BroadcastRequest) (string, 
 		logs[i] = models.BroadcastLog{
 			GuestName: guest.Name,
 			Phone:     guest.Phone,
+			Code:      guest.Code,
 			ChatID:    NormalizePhone(guest.Phone),
 			Status:    "PENDING",
 		}

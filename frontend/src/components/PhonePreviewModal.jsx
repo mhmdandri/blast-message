@@ -14,18 +14,22 @@ export default function PhonePreviewModal({
   onClose,
   template,
   linkFormat,
-  guestName = "Budi Santoso",
+  guestName = "Wulan & Partner",
   guestPhone = "08123456789",
+  guestCode = "01197",
 }) {
   if (!isOpen) return null;
 
-  const generatedLink = generateGuestLink(linkFormat, guestName, guestPhone);
+  const generatedLink = generateGuestLink(linkFormat, guestName, guestPhone, guestCode);
   const formattedMessage = template
     .replace(/\{nama\}/gi, guestName)
     .replace(/\{name\}/gi, guestName)
     .replace(/\{nomor\}/gi, guestPhone)
     .replace(/\{phone\}/gi, guestPhone)
     .replace(/\{slug\}/gi, slugify(guestName))
+    .replace(/\{nama_encoded\}/gi, encodeURIComponent(guestName))
+    .replace(/\{code\}/gi, guestCode)
+    .replace(/\{kode\}/gi, guestCode)
     .replace(/\{link\}/gi, generatedLink)
     .replace(/\{url\}/gi, generatedLink);
 
@@ -75,7 +79,7 @@ export default function PhonePreviewModal({
                 </div>
               </div>
               <div className="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded-full font-mono">
-                {guestPhone}
+                {guestPhone}{guestCode ? ` • ${guestCode}` : ""}
               </div>
             </div>
 

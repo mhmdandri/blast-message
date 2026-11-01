@@ -114,17 +114,19 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
 
   // Variable definitions with info
   const variables = [
-    { tag: "{nama}", label: "Nama Tamu", desc: "Contoh: Budi Santoso", color: "indigo" },
+    { tag: "{nama}", label: "Nama Tamu", desc: "Contoh: Wulan & Partner", color: "indigo" },
     { tag: "{link}", label: "Link Undangan", desc: "Tautan unik per tamu", color: "emerald" },
+    { tag: "{code}", label: "Kode Tamu", desc: "Contoh: 01197", color: "amber" },
     { tag: "{nomor}", label: "No. WhatsApp", desc: "08xxx / 628xxx", color: "purple" },
-    { tag: "{slug}", label: "Slug Nama", desc: "budi-santoso", color: "blue" },
-    { tag: "{nama_encoded}", label: "Nama Query (%20)", desc: "Budi%20Santoso", color: "sky" },
+    { tag: "{slug}", label: "Slug Nama", desc: "wulan-partner", color: "blue" },
+    { tag: "{nama_encoded}", label: "Nama Query (%20)", desc: "Wulan%20%26%20Partner", color: "sky" },
   ];
 
   // Preview with sample data
-  const sampleName = "Budi Santoso";
+  const sampleName = "Wulan & Partner";
   const samplePhone = "08123456789";
-  const sampleLink = generateGuestLink(linkFormat, sampleName, samplePhone);
+  const sampleCode = "01197";
+  const sampleLink = generateGuestLink(linkFormat, sampleName, samplePhone, sampleCode);
 
   const previewText = template
     .replace(/\{nama\}/gi, sampleName)
@@ -132,7 +134,9 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
     .replace(/\{nomor\}/gi, samplePhone)
     .replace(/\{phone\}/gi, samplePhone)
     .replace(/\{slug\}/gi, slugify(sampleName))
-    .replace(/\{nama_encoded\}/gi, "Budi%20Santoso")
+    .replace(/\{nama_encoded\}/gi, encodeURIComponent(sampleName))
+    .replace(/\{code\}/gi, sampleCode)
+    .replace(/\{kode\}/gi, sampleCode)
     .replace(/\{link\}/gi, sampleLink)
     .replace(/\{url\}/gi, sampleLink);
 
@@ -207,6 +211,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
             const colorClasses = {
               indigo: "bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-300 border-indigo-500/30",
               emerald: "bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30",
+              amber: "bg-amber-500/10 hover:bg-amber-500/25 text-amber-300 border-amber-500/30",
               purple: "bg-purple-500/10 hover:bg-purple-500/25 text-purple-300 border-purple-500/30",
               blue: "bg-blue-500/10 hover:bg-blue-500/25 text-blue-300 border-blue-500/30",
               sky: "bg-sky-500/10 hover:bg-sky-500/25 text-sky-300 border-sky-500/30",
@@ -298,7 +303,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
           ref={textareaRef}
           value={template}
           onChange={(e) => setTemplate(e.target.value)}
-          placeholder="Ketik pesan Anda di sini... Gunakan variabel seperti {nama} dan {link} untuk personalisasi otomatis."
+          placeholder="Ketik pesan Anda di sini... Gunakan variabel seperti {nama}, {link}, dan {code} untuk personalisasi otomatis."
           rows={7}
           className="w-full h-full min-h-40 sm:min-h-48 p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 text-xs sm:text-sm placeholder-slate-500 resize-none outline-none font-sans leading-relaxed"
         />
@@ -325,7 +330,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
         <div className="flex items-center justify-between mb-2 gap-2">
           <span className="text-[11px] sm:text-xs font-semibold text-slate-400 flex items-center gap-1.5 truncate">
             <Eye className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="truncate">Simulasi Hasil Pesan ({sampleName})</span>
+            <span className="truncate">Simulasi Hasil Pesan ({sampleName} - Code: {sampleCode})</span>
           </span>
 
           <button
@@ -371,6 +376,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
         linkFormat={linkFormat}
         guestName={sampleName}
         guestPhone={samplePhone}
+        guestCode={sampleCode}
       />
     </div>
   );

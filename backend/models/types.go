@@ -6,6 +6,7 @@ import "time"
 type Guest struct {
 	Name  string `json:"name" binding:"required"`
 	Phone string `json:"phone" binding:"required"`
+	Code  string `json:"code,omitempty"`
 	Link  string `json:"link,omitempty"`
 }
 
@@ -21,6 +22,7 @@ type BroadcastRequest struct {
 type BroadcastLog struct {
 	GuestName string    `json:"guestName"`
 	Phone     string    `json:"phone"`
+	Code      string    `json:"code,omitempty"`
 	ChatID    string    `json:"chatId"`
 	Status    string    `json:"status"` // PENDING, SUCCESS, FAILED
 	Error     string    `json:"error,omitempty"`

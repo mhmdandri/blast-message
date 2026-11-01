@@ -27,8 +27,13 @@ export default function App() {
   // Link Format State
   const [linkFormat, setLinkFormat] = useState(() => {
     const saved = localStorage.getItem("waha_link_format");
-    if (!saved || saved.includes("undangan-blond-alpha.vercel.app") || saved.includes("andricica.mohaproject.tech")) {
-      return "https://weddingofandricica.me/{nama_encoded}";
+    if (
+      !saved ||
+      saved.includes("undangan-blond-alpha.vercel.app") ||
+      saved.includes("andricica.mohaproject.tech") ||
+      saved === "https://weddingofandricica.me/{nama_encoded}"
+    ) {
+      return "https://weddingofandricica.me/{nama_encoded}?code={code}";
     }
     return saved;
   });
@@ -39,8 +44,8 @@ export default function App() {
 
   // Broadcast & Guests State
   const [guests, setGuests] = useState([
-    { id: "g1", name: "Budi Santoso", phone: "08123456789" },
-    { id: "g2", name: "Siti Rahma", phone: "08571234567" },
+    { id: "g1", name: "Wulan & Partner", phone: "08123456789", code: "01197" },
+    { id: "g2", name: "Budi Santoso", phone: "08571234567", code: "01198" },
   ]);
   const [templateMessage, setTemplateMessage] = useState(
     "Halo {nama},\n\nKami mengundang Anda untuk menghadiri acara Pernikahan & Resepsi Digital kami.\nSilakan buka tautan undangan berikut:\n{link}\n\nMohon konfirmasi kehadiran Anda. Terima kasih!",
@@ -166,7 +171,8 @@ export default function App() {
       const preparedGuests = guests.map((g) => ({
         name: g.name,
         phone: g.phone,
-        link: g.link || generateGuestLink(linkFormat, g.name, g.phone),
+        code: g.code || "",
+        link: g.link || generateGuestLink(linkFormat, g.name, g.phone, g.code),
       }));
 
       const payload = {

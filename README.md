@@ -36,17 +36,17 @@ Sistem terdiri dari 3 komponen utama:
                                                                    │
                                                 WAHA REST API Call │ (POST /api/sendText)
                                                                    ▼
-                                                       ┌───────────────────────┐
-                                                       │      WAHA Server      │
-                                                       │ (WhatsApp HTTP API)   │
-                                                       └───────────┬───────────┘
+                                                        ┌───────────────────────┐
+                                                        │      WAHA Server      │
+                                                        │ (WhatsApp HTTP API)   │
+                                                        └───────────┬───────────┘
                                                                    │
-                                                       WhatsApp Web│ Protocol
+                                                        WhatsApp Web│ Protocol
                                                                    ▼
-                                                       ┌───────────────────────┐
-                                                       │   Penerima WhatsApp   │
-                                                       │   (Tamu Undangan)     │
-                                                       └───────────────────────┘
+                                                        ┌───────────────────────┐
+                                                        │   Penerima WhatsApp   │
+                                                        │   (Tamu Undangan)     │
+                                                        └───────────────────────┘
 ```
 
 ---
@@ -202,8 +202,9 @@ Sebelum menjalankan aplikasi, pastikan perangkat Anda telah terinstall:
 
 Di kartu **Konfigurasi Format Link Undangan Digital**, tentukan format URL website undangan Anda:
 
-- **Format Parameter**: `https://undangan-anda.com/?to={nama_encoded}` _(Contoh: `.../?to=Budi%20Santoso`)_
-- **Format Path / Slug**: `https://undangan-anda.com/tamu/{slug}` _(Contoh: `.../tamu/budi-santoso`)_
+- **Format Direct Nama + Code**: `https://weddingofandricica.me/{nama_encoded}?code={code}` _(Contoh: `https://weddingofandricica.me/Wulan%20%26%20Partner?code=01197`)_
+- **Format Direct Slug + Code**: `https://weddingofandricica.me/{slug}?code={code}` _(Contoh: `.../wulan-partner?code=01197`)_
+- **Format Query Parameter**: `https://weddingofandricica.me/?to={nama_encoded}&code={code}` _(Contoh: `.../?to=Wulan%20%26%20Partner&code=01197`)_
 - Klik tombol **"Tes Buka"** untuk memvalidasi apakah tautan undangan terbuka dengan benar di browser.
 
 ### 3. Input Daftar Tamu
@@ -211,20 +212,25 @@ Di kartu **Konfigurasi Format Link Undangan Digital**, tentukan format URL websi
 Daftar tamu dapat dimasukkan dengan 2 cara:
 
 1. **Upload File Excel (`.xlsx`, `.xls`, `.csv`)**:
-   - Klik **"Download Contoh Format"** untuk mengunduh template tabel.
-   - Kolom yang didukung otomatis: `Nama Tamu` dan `Nomor Telepon` (otomatis dikonversi ke format 62xxx). Link undangan otomatis dibuatkan oleh sistem berdasarkan format URL yang Anda setting.
-2. **Ketik / Paste Teks Manual**:
-   - Format: `Nama, Nomor` (contoh: `Budi Santoso, 08123456789`).
+   - Klik **"Unduh Template Excel"** untuk mengunduh template tabel dengan 3 kolom: `Nama Tamu`, `Nomor Telepon`, dan `Code`.
+   - Kolom yang didukung otomatis:
+     - `Nama Tamu` : Nama tamu/undangan
+     - `Nomor Telepon` : Nomor HP WhatsApp (otomatis dikonversi ke format 62xxx)
+     - `Code` : Kode unik undangan tamu (contoh: `01197`, angka 0 di depan tetap terjaga sebagai string)
+2. **Ketik / Paste Teks Manual via Tabel**:
+   - Tersedia form tambah tamu langsung dengan field Nama, Nomor HP, dan Code.
+   - Format jika paste: `Nama, Nomor, Code` (contoh: `Wulan & Partner, 08123456789, 01197`).
 
 ### 4. Template Pesan & Variabel Dinamis
 
 Kustomisasi pesan menggunakan tag variabel:
 
-- `{nama}` : Nama lengkap tamu (contoh: `Budi Santoso`)
+- `{nama}` : Nama lengkap tamu (contoh: `Wulan & Partner`)
+- `{code}` atau `{kode}` : Kode unik tamu dari kolom Excel (contoh: `01197`)
 - `{link}` : Tautan website undangan yang sudah digenerate khusus untuk tamu tersebut
 - `{nomor}`: Nomor WhatsApp tamu
-- `{slug}` : Nama format URL-friendly (contoh: `budi-santoso`)
-- `{nama_encoded}` : Nama berformat URL encoded `%20` (contoh: `Budi%20Santoso`)
+- `{slug}` : Nama format URL-friendly (contoh: `wulan-partner`)
+- `{nama_encoded}` : Nama berformat URL encoded `%20` (contoh: `Wulan%20%26%20Partner`)
 
 Tersedia tombol **"Pratinjau di HP"** untuk melihat simulasi visual tampilan chat WhatsApp sebelum pesan disebarkan.
 

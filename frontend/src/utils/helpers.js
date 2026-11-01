@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
  */
 export function normalizePhoneDisplay(phone) {
   if (!phone) return "";
-  let digits = phone.replace(/\D/g, "");
+  let digits = String(phone).replace(/\D/g, "");
   if (digits.startsWith("0")) {
     digits = "62" + digits.slice(1);
   } else if (!digits.startsWith("62") && digits.length > 0) {
@@ -15,10 +15,11 @@ export function normalizePhoneDisplay(phone) {
 }
 
 /**
- * Parses CSV/Raw text into array of { name, phone }
+ * Parses CSV/Raw text into array of { name, phone, code }
  * Supports formats:
- * - "Budi, 08123456789"
- * - "Budi;08123456789"
+ * - "Wulan & Partner, 08123456789, 01197"
+ * - "Budi Santoso, 08123456789"
+ * - "Budi;08123456789;01198"
  * - "08123456789" (name defaults to Tamu)
  */
 export function parseGuestText(rawText) {
@@ -32,7 +33,19 @@ export function parseGuestText(rawText) {
 
     // Check for delimiter comma or semicolon or tab
     const parts = trimmed.split(/[,;\t]+/);
-    if (parts.length >= 2) {
+    if (parts.length >= 3) {
+      const name = parts[0].trim();
+      const phone = parts[1].trim();
+      const code = parts[2].trim();
+      if (phone) {
+        guests.push({
+          id: `guest-${index}-${Date.now()}`,
+          name: name || `Tamu ${index + 1}`,
+          phone: phone,
+          code: code,
+        });
+      }
+    } else if (parts.length === 2) {
       const name = parts[0].trim();
       const phone = parts[1].trim();
       if (phone) {
@@ -40,6 +53,7 @@ export function parseGuestText(rawText) {
           id: `guest-${index}-${Date.now()}`,
           name: name || `Tamu ${index + 1}`,
           phone: phone,
+          code: "",
         });
       }
     } else if (parts.length === 1) {
@@ -52,12 +66,14 @@ export function parseGuestText(rawText) {
           id: `guest-${index}-${Date.now()}`,
           name: name,
           phone: phone,
+          code: "",
         });
       } else {
         guests.push({
           id: `guest-${index}-${Date.now()}`,
           name: `Tamu ${index + 1}`,
           phone: trimmed,
+          code: "",
         });
       }
     }
@@ -81,15 +97,18 @@ export function slugify(str) {
 /**
  * Generates dynamic invitation link for a guest based on format template
  * Format examples:
- * - "https://undangan.com/?to={nama_encoded}" -> "https://undangan.com/?to=Budi%20Santoso"
- * - "https://undangan.com/tamu/{slug}" -> "https://undangan.com/tamu/budi-santoso"
+ * - "https://weddingofandricica.me/{nama_encoded}?code={code}" -> "https://weddingofandricica.me/Wulan%20%26%20Partner?code=01197"
+ * - "https://undangan.com/?to={nama_encoded}&code={code}" -> "https://undangan.com/?to=Budi%20Santoso&code=01198"
+ * - "https://undangan.com/tamu/{slug}?code={code}" -> "https://undangan.com/tamu/budi-santoso?code=01198"
  */
-export function generateGuestLink(linkFormat, name, phone) {
+export function generateGuestLink(linkFormat, name, phone, code = "") {
   if (!linkFormat) return "";
   let link = linkFormat;
   const nameSlug = slugify(name);
   const nameEncoded = encodeURIComponent(name || "");
   const nameRaw = name || "";
+  const codeRaw = code != null ? String(code).trim() : "";
+  const codeEncoded = encodeURIComponent(codeRaw);
 
   link = link.replace(/\{nama_encoded\}/gi, nameEncoded);
   link = link.replace(/\{slug\}/gi, nameSlug);
@@ -97,11 +116,14 @@ export function generateGuestLink(linkFormat, name, phone) {
   link = link.replace(/\{name\}/gi, nameRaw);
   link = link.replace(/\{nomor\}/gi, phone || "");
   link = link.replace(/\{phone\}/gi, phone || "");
+  link = link.replace(/\{code_encoded\}/gi, codeEncoded);
+  link = link.replace(/\{code\}/gi, codeRaw);
+  link = link.replace(/\{kode\}/gi, codeRaw);
   return link;
 }
 
 /**
- * Parses uploaded Excel (.xlsx, .xls, .csv) file into array of { id, name, phone, link }
+ * Parses uploaded Excel (.xlsx, .xls, .csv) file into array of { id, name, phone, code, link }
  */
 export async function parseExcelFile(file) {
   return new Promise((resolve, reject) => {
@@ -126,6 +148,7 @@ export async function parseExcelFile(file) {
         // Find header row and column indexes
         let nameColIdx = -1;
         let phoneColIdx = -1;
+        let codeColIdx = -1;
         let linkColIdx = -1;
         let startRowIdx = 0;
 
@@ -142,20 +165,31 @@ export async function parseExcelFile(file) {
           ) {
             phoneColIdx = idx;
           }
+          if (/code|kode|pin|passcode/i.test(str)) {
+            codeColIdx = idx;
+          }
           if (/link|url|tautan|link_undangan|link\s+undangan/i.test(str)) {
             linkColIdx = idx;
           }
         });
 
         // If headers were detected, start reading from row 1
-        if (nameColIdx !== -1 || phoneColIdx !== -1 || linkColIdx !== -1) {
+        if (
+          nameColIdx !== -1 ||
+          phoneColIdx !== -1 ||
+          codeColIdx !== -1 ||
+          linkColIdx !== -1
+        ) {
           startRowIdx = 1;
           if (nameColIdx === -1) nameColIdx = 0;
           if (phoneColIdx === -1) phoneColIdx = 1;
         } else {
-          // Fallback: column 0 is Name, column 1 is Phone
+          // Fallback: column 0 is Name, column 1 is Phone, column 2 is Code (if exists)
           nameColIdx = 0;
           phoneColIdx = jsonRows[0].length > 1 ? 1 : 0;
+          if (jsonRows[0].length > 2) {
+            codeColIdx = 2;
+          }
         }
 
         const guests = [];
@@ -165,6 +199,8 @@ export async function parseExcelFile(file) {
 
           let rawName = String(row[nameColIdx] || "").trim();
           let rawPhone = String(row[phoneColIdx] || "").trim();
+          let rawCode =
+            codeColIdx !== -1 ? String(row[codeColIdx] ?? "").trim() : "";
           let customLink =
             linkColIdx !== -1 ? String(row[linkColIdx] || "").trim() : "";
 
@@ -179,6 +215,7 @@ export async function parseExcelFile(file) {
               id: `excel-${i}-${Date.now()}`,
               name: rawName || `Tamu ${guests.length + 1}`,
               phone: rawPhone,
+              code: rawCode,
               link: customLink,
             });
           }
@@ -196,21 +233,24 @@ export async function parseExcelFile(file) {
 }
 
 /**
- * Downloads a sample Excel (.xlsx) file template
+ * Downloads a sample Excel (.xlsx) file template with Code column
  */
 export function downloadExcelTemplate() {
   const templateData = [
     {
-      "Nama Tamu": "Budi Santoso",
+      "Nama Tamu": "Wulan & Partner",
       "Nomor Telepon": "08123456789",
+      "Code": "01197",
+    },
+    {
+      "Nama Tamu": "Budi Santoso",
+      "Nomor Telepon": "08571234567",
+      "Code": "01198",
     },
     {
       "Nama Tamu": "Siti Rahma",
-      "Nomor Telepon": "08571234567",
-    },
-    {
-      "Nama Tamu": "Ahmad Dahlan",
       "Nomor Telepon": "08219876543",
+      "Code": "01199",
     },
   ];
 
@@ -218,8 +258,18 @@ export function downloadExcelTemplate() {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Daftar Tamu");
 
+  // Ensure Code column cells are explicitly treated as string type to preserve leading zeroes
+  const range = XLSX.utils.decode_range(worksheet["!ref"]);
+  for (let R = 1; R <= range.e.r; ++R) {
+    const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 });
+    if (worksheet[cellAddress]) {
+      worksheet[cellAddress].t = "s";
+      worksheet[cellAddress].z = "@";
+    }
+  }
+
   // Set column widths
-  worksheet["!cols"] = [{ wch: 25 }, { wch: 20 }];
+  worksheet["!cols"] = [{ wch: 25 }, { wch: 20 }, { wch: 15 }];
 
   XLSX.writeFile(workbook, "Template_Daftar_Tamu_Undangan.xlsx");
 }

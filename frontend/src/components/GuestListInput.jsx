@@ -22,6 +22,7 @@ export default function GuestListInput({ guests, setGuests }) {
   const [activeTab, setActiveTab] = useState("excel"); // 'excel' or 'table'
   const [newGuestName, setNewGuestName] = useState("");
   const [newGuestPhone, setNewGuestPhone] = useState("");
+  const [newGuestCode, setNewGuestCode] = useState("");
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [uploadStatus, setUploadStatus] = useState(null); // { count, error }
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,10 +62,12 @@ export default function GuestListInput({ guests, setGuests }) {
       id: `guest-${Date.now()}`,
       name: newGuestName.trim() || `Tamu ${guests.length + 1}`,
       phone: newGuestPhone.trim(),
+      code: newGuestCode.trim(),
     };
     setGuests([...guests, newGuest]);
     setNewGuestName("");
     setNewGuestPhone("");
+    setNewGuestCode("");
   };
 
   const handleRemoveGuest = (id) => {
@@ -80,9 +83,9 @@ export default function GuestListInput({ guests, setGuests }) {
 
   const loadSampleData = () => {
     const samples = [
-      { id: "g1", name: "Budi Santoso", phone: "08123456789" },
-      { id: "g2", name: "Siti Rahma", phone: "08571234567" },
-      { id: "g3", name: "Ahmad Dahlan", phone: "08219876543" },
+      { id: "g1", name: "Wulan & Partner", phone: "08123456789", code: "01197" },
+      { id: "g2", name: "Budi Santoso", phone: "08571234567", code: "01198" },
+      { id: "g3", name: "Siti Rahma", phone: "08219876543", code: "01199" },
     ];
     setGuests(samples);
   };
@@ -93,6 +96,7 @@ export default function GuestListInput({ guests, setGuests }) {
     return (
       g.name.toLowerCase().includes(q) ||
       g.phone.toLowerCase().includes(q) ||
+      (g.code && g.code.toLowerCase().includes(q)) ||
       (g.link && g.link.toLowerCase().includes(q))
     );
   });
@@ -173,18 +177,19 @@ export default function GuestListInput({ guests, setGuests }) {
                 Pilih atau Seret File Excel Di Sini
               </h4>
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
-                Mendukung format{" "}
-                <span className="text-indigo-400 font-mono font-semibold">
-                  .xlsx
+                Mendukung kolom{" "}
+                <span className="text-indigo-400 font-semibold">
+                  Nama Tamu
                 </span>
                 ,{" "}
-                <span className="text-indigo-400 font-mono font-semibold">
-                  .xls
+                <span className="text-indigo-400 font-semibold">
+                  Nomor Telepon
                 </span>
-                , atau{" "}
-                <span className="text-indigo-400 font-mono font-semibold">
-                  .csv
-                </span>
+                , dan{" "}
+                <span className="text-emerald-400 font-semibold">
+                  Code
+                </span>{" "}
+                (.xlsx, .xls, .csv)
               </p>
             </div>
 
@@ -221,7 +226,7 @@ export default function GuestListInput({ guests, setGuests }) {
               className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 cursor-pointer font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg border border-indigo-500/30 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Unduh Template Excel</span>
+              <span>Unduh Template Excel (Kolom Nama, HP, Code)</span>
             </button>
 
             {guests.length > 0 && (
@@ -261,6 +266,13 @@ export default function GuestListInput({ guests, setGuests }) {
                 onChange={(e) => setNewGuestPhone(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs outline-none focus:border-indigo-500 font-mono"
               />
+              <input
+                type="text"
+                placeholder="Code (01197)"
+                value={newGuestCode}
+                onChange={(e) => setNewGuestCode(e.target.value)}
+                className="w-full sm:w-28 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs outline-none focus:border-indigo-500 font-mono"
+              />
               <button
                 type="submit"
                 className="px-3.5 py-2 rounded-xl gradient-bg text-white text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer hover:opacity-90 shrink-0"
@@ -276,7 +288,7 @@ export default function GuestListInput({ guests, setGuests }) {
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
                   <input
                     type="text"
-                    placeholder="Cari nama atau nomor..."
+                    placeholder="Cari nama, nomor, atau code..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-300 text-xs outline-none focus:border-indigo-500 font-sans"
@@ -315,12 +327,13 @@ export default function GuestListInput({ guests, setGuests }) {
                   : "Belum ada tamu terdaftar. Tambahkan via form di atas atau tab Upload Excel."}
               </div>
             ) : (
-              <table className="w-full text-left text-xs min-w-85">
+              <table className="w-full text-left text-xs min-w-100">
                 <thead className="sticky top-0 bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold">
                   <tr>
                     <th className="py-2.5 px-3">No</th>
                     <th className="py-2.5 px-3">Nama</th>
                     <th className="py-2.5 px-3">Nomor Telepon</th>
+                    <th className="py-2.5 px-3">Code</th>
                     <th className="py-2.5 px-3 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -339,6 +352,15 @@ export default function GuestListInput({ guests, setGuests }) {
                         <span className="text-slate-600">
                           ({normalizePhoneDisplay(guest.phone)})
                         </span>
+                      </td>
+                      <td className="py-2 px-3 font-mono text-xs whitespace-nowrap">
+                        {guest.code ? (
+                          <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold">
+                            {guest.code}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 italic">-</span>
+                        )}
                       </td>
                       <td className="py-2 px-3 text-right">
                         <button
