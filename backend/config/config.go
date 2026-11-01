@@ -21,14 +21,14 @@ func LoadConfig() *Config {
 
 	wahaBaseURL := os.Getenv("WAHA_BASE_URL")
 	if wahaBaseURL == "" {
-		wahaBaseURL = "https://wa.mohaproject.tech"
+		wahaBaseURL = "https://waha.weddingofandricica.me"
 	}
 
 	wahaAPIKey := os.Getenv("WAHA_API_KEY")
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8083"
 	}
 
 	return &Config{

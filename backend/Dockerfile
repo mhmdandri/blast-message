@@ -21,6 +21,6 @@ RUN apk add --no-cache ca-certificates tzdata curl
 
 COPY --from=builder /app/blast-backend /app/blast-backend
 
-EXPOSE 8082
+EXPOSE 8083
 
 ENTRYPOINT ["/app/blast-backend"]

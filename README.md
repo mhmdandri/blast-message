@@ -7,7 +7,7 @@ Aplikasi web modern untuk pengiriman pesan massal (_broadcast/blast_) WhatsApp y
 ## 📑 Daftar Isi
 
 - [Arsitektur & Teknologi](#-arsitektur--teknologi)
-- [Panduan Deploy Docker di VPS (Rekomendasi Utama)](#-panduan-deploy-docker-di-vps-rekomendasi-utama)
+- [Panduan Deploy Docker di VPS](#-panduan-deploy-docker-di-vps)
 - [Penjelasan Environment Variables (.env)](#-penjelasan-environment-variables-env)
 - [Panduan Setup Manual (Tanpa Docker)](#-panduan-setup-manual-tanpa-docker)
 - [Panduan Penggunaan Fitur](#-panduan-penggunaan-fitur)
@@ -21,8 +21,8 @@ Aplikasi web modern untuk pengiriman pesan massal (_broadcast/blast_) WhatsApp y
 
 Sistem terdiri dari kontainer Docker yang terhubung pada jaringan `moha_network`:
 
-1. **Frontend (`blast-frontend`)**: Web UI React 19 + Vite yang di-serve via **Nginx** (port 5173). Nginx secara otomatis mem-proxy request `/api/` ke backend container (port 8082) sehingga bebas dari isu CORS.
-2. **Backend (`blast-backend`)**: REST API performa tinggi berbasis **Go (Golang Gin)** (port 8082). Mengelola background goroutine worker pengiriman massal dengan delay acak aman dan terhubung ke server WAHA yang ada.
+1. **Frontend (`blast-frontend`)**: Web UI React 19 + Vite yang dijalankan via **Node.js** (`vite preview` port 5173). Tidak menggunakan Nginx internal sama sekali, sehingga Anda leluasa mengatur reverse proxy sendiri di server.
+2. **Backend (`blast-backend`)**: REST API performa tinggi berbasis **Go (Golang Gin)** (port 8083). Mengelola background goroutine worker pengiriman massal dengan delay acak aman dan terhubung ke server WAHA yang ada.
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -30,12 +30,11 @@ Sistem terdiri dari kontainer Docker yang terhubung pada jaringan `moha_network`
 │                                                        │
 │  ┌─────────────────────────┐                           │
 │  │     blast-frontend      │ (Port 5173)               │
-│  │   (React + Nginx Proxy) │ ──┐                       │
-│  └─────────────────────────┘   │                       │
-│                                │ Internal Proxy (/api) │
-│                                ▼                       │
+│  │     (React + Vite)      │                           │
+│  └─────────────────────────┘                           │
+│                                                        │
 │  ┌─────────────────────────┐                           │
-│  │      blast-backend      │ (Port 8082)               │
+│  │      blast-backend      │ (Port 8083)               │
 │  │    (Golang Gin API)     │ ──┐                       │
 │  └─────────────────────────┘   │                       │
 │                                │ Target WAHA Server    │
@@ -47,9 +46,7 @@ Sistem terdiri dari kontainer Docker yang terhubung pada jaringan `moha_network`
 
 ---
 
-## 🐳 Panduan Deploy Docker di VPS (Rekomendasi Utama)
-
-Semua konfigurasi Docker (`docker-compose.yml`, `Dockerfile` Backend, `Dockerfile` Frontend, dan Nginx) sudah siap pakai.
+## 🐳 Panduan Deploy Docker di VPS
 
 ### 1. Menjalankan Kontainer
 
@@ -66,12 +63,12 @@ docker ps
 ```
 Pastikan kontainer berstatus **Up**:
 * `blast-frontend` $\rightarrow$ `0.0.0.0:5173`
-* `blast-backend` $\rightarrow$ `0.0.0.0:8082`
+* `blast-backend` $\rightarrow$ `0.0.0.0:8083`
 
 ### 3. Mengakses Aplikasi
 
 * **Web UI Dashboard:** Buka browser di `http://IP_VPS:5173` atau `http://localhost:5173`.
-* **API Backend:** `http://IP_VPS:8082/api`
+* **API Backend:** `http://IP_VPS:8083/api`
 
 ### 4. Perintah Berguna Lainnya
 
@@ -93,11 +90,12 @@ docker-compose down
 
 ## 🔑 Penjelasan Environment Variables (.env)
 
-File `.env` di root direktori mengatur port dan alamat server WAHA:
+File `.env` di root direktori mengatur port dan alamat server:
 
 ```env
 FRONTEND_PORT=5173
-BACKEND_PORT=8082
+BACKEND_PORT=8083
+VITE_API_BASE_URL=http://localhost:8083/api
 WAHA_BASE_URL=https://waha.weddingofandricica.me
 WAHA_API_KEY=Lollipop5.0qwerty244
 ```
@@ -105,7 +103,8 @@ WAHA_API_KEY=Lollipop5.0qwerty244
 | Variabel | Deskripsi | Default |
 | :--- | :--- | :--- |
 | **`FRONTEND_PORT`** | Port akses Web UI di browser | `5173` |
-| **`BACKEND_PORT`** | Port API Golang | `8082` |
+| **`BACKEND_PORT`** | Port API Golang | `8083` |
+| **`VITE_API_BASE_URL`** | URL Backend API yang dipanggil frontend browser | `http://localhost:8083/api` |
 | **`WAHA_BASE_URL`** | URL target server WAHA yang ada | `https://waha.weddingofandricica.me` |
 | **`WAHA_API_KEY`** | Token keamanan WAHA | `Lollipop5.0qwerty244` |
 
@@ -123,7 +122,7 @@ Jika ingin menjalankan aplikasi secara langsung di terminal lokal (development):
    go mod download
    go run main.go
    ```
-   Backend akan berjalan di `http://localhost:8082`.
+   Backend akan berjalan di `http://localhost:8083`.
 
 ### 2. Setup Frontend (React + Vite)
 
@@ -133,7 +132,7 @@ Jika ingin menjalankan aplikasi secara langsung di terminal lokal (development):
    pnpm install
    pnpm dev
    ```
-   Frontend akan berjalan di `http://localhost:5173` dan otomatis mem-proxy request `/api` ke `http://localhost:8082`.
+   Frontend akan berjalan di `http://localhost:5173`.
 
 ---
 
@@ -203,34 +202,7 @@ Agar link undangan menampilkan **kartu metadata (judul, deskripsi ringkas, dan g
    Tautan undangan tidak boleh 404, tidak boleh di `localhost`, dan tidak boleh terhalang proteksi login/Cloudflare Turnstile captcha yang memblokir crawler.
 
 3. **Wajib Memasang Tag Open Graph (OG Meta) di `<head>` Website Undangan**:
-   Pastikan file HTML website undangan Anda memiliki meta tag Open Graph berikut:
-
-   ```html
-   <head>
-     <!-- Judul Acara / Undangan -->
-     <meta property="og:title" content="The Wedding of Romeo & Juliet" />
-
-     <!-- Deskripsi Singkat -->
-     <meta
-       property="og:description"
-       content="Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i ke resepsi pernikahan kami."
-     />
-
-     <!-- Gambar Thumbnail (Wajib URL Publik Lengkap https://) -->
-     <meta
-       property="og:image"
-       content="https://undangan-anda.com/assets/og-wedding.jpg"
-     />
-     <meta property="og:image:width" content="1200" />
-     <meta property="og:image:height" content="630" />
-
-     <meta property="og:url" content="https://undangan-anda.com" />
-     <meta property="og:type" content="website" />
-   </head>
-   ```
-
-4. **Hindari Spasi Mentah di URL**:
-   Gunakan `{nama_encoded}` (`?to=Wulan%20%26%20Partner`) atau `{slug}` (`/tamu/wulan-partner`).
+   Pastikan file HTML website undangan Anda memiliki meta tag Open Graph: `og:title`, `og:description`, `og:image`, `og:url`.
 
 ---
 
@@ -242,7 +214,7 @@ blast-message/
 ├── docker-compose.yml             # Konfigurasi orkestrasi kontainer Docker (Backend & Frontend)
 ├── .env                           # File konfigurasi environment root
 ├── .env.example                   # Contoh template file .env root
-├── backend/                       # Server Backend (Golang Gin - Port 8082)
+├── backend/                       # Server Backend (Golang Gin - Port 8083)
 │   ├── Dockerfile                 # Multi-stage build Go binary & runtime Alpine
 │   ├── .dockerignore
 │   ├── main.go                    # Entry point aplikasi backend
@@ -252,12 +224,11 @@ blast-message/
 │   ├── handlers/                  # Handler API sesi & broadcast
 │   ├── models/types.go            # Struct data model
 │   └── services/broadcast_worker.go # Worker background & parsing variabel {code}
-└── frontend/                      # Client Web UI (React + Vite + Tailwind - Port 5173)
-    ├── Dockerfile                 # Multi-stage build Node & Nginx
-    ├── nginx.conf                 # Nginx config & reverse-proxy ke backend:8082
+└── frontend/                      # Client Web UI (React + Vite - Port 5173)
+    ├── Dockerfile                 # Node.js Alpine runtime (vite preview)
     ├── .dockerignore
     ├── package.json               # Dependensi frontend
-    ├── vite.config.js             # Konfigurasi build Vite & proxy dev
+    ├── vite.config.js             # Konfigurasi Vite
     └── src/
         ├── App.jsx                # Komponen root & state management
         ├── components/            # UI components (Template, GuestList, Tracker, dll)
