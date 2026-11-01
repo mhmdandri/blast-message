@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// Defaults directly to backend port 8082 (CORS is enabled on backend)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api';
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,

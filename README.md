@@ -1,17 +1,15 @@
 # 🚀 WhatsApp Blast Message & Digital Invitation System
 
-Aplikasi web modern untuk pengiriman pesan massal (_broadcast/blast_) WhatsApp yang dirancang khusus untuk undangan digital pernikahan, acara, notifikasi, dan pesan personalisasi. Sistem ini dilengkapi fitur personalisasi nama otomatis, generasi tautan undangan dinamis, kartu pratinjau metadata (_Open Graph Link Preview_), simulasi tampilan WhatsApp di HP, serta perlindungan jeda acak (_smart delay_) untuk meminimalisir risiko pemblokiran nomor.
+Aplikasi web modern untuk pengiriman pesan massal (_broadcast/blast_) WhatsApp yang dirancang khusus untuk undangan digital pernikahan, acara, notifikasi, dan pesan personalisasi. Sistem ini dilengkapi fitur personalisasi nama otomatis, kode undangan unik (`{code}`), generasi tautan undangan dinamis, kartu pratinjau metadata (_Open Graph Link Preview_), simulasi tampilan WhatsApp di HP, serta perlindungan jeda acak (_smart delay_) untuk meminimalisir risiko pemblokiran nomor.
 
 ---
 
 ## 📑 Daftar Isi
 
 - [Arsitektur & Teknologi](#-arsitektur--teknologi)
+- [Panduan Deploy Docker di VPS (Rekomendasi Utama)](#-panduan-deploy-docker-di-vps-rekomendasi-utama)
 - [Penjelasan Environment Variables (.env)](#-penjelasan-environment-variables-env)
-- [Prasyarat Sistem (Prerequisites)](#-prasyarat-sistem-prerequisites)
-- [Panduan Setup dari Nol (Step-by-Step)](#-panduan-setup-dari-nol-step-by-step)
-  - [1. Setup Backend (Golang)](#1-setup-backend-golang)
-  - [2. Setup Frontend (React + Vite)](#2-setup-frontend-react--vite)
+- [Panduan Setup Manual (Tanpa Docker)](#-panduan-setup-manual-tanpa-docker)
 - [Panduan Penggunaan Fitur](#-panduan-penggunaan-fitur)
 - [Panduan Khusus: Menampilkan Metadata Preview Link Undangan](#-panduan-khusus-menampilkan-metadata-preview-link-undangan)
 - [Struktur Folder Project](#-struktur-folder-project)
@@ -21,171 +19,121 @@ Aplikasi web modern untuk pengiriman pesan massal (_broadcast/blast_) WhatsApp y
 
 ## 🏗 Arsitektur & Teknologi
 
-Sistem terdiri dari 3 komponen utama:
+Sistem terdiri dari kontainer Docker yang terhubung pada jaringan `moha_network`:
 
-1. **Frontend**: Antarmuka pengguna responsif berbasis **React 19**, **Vite**, **Tailwind CSS**, dan **Lucide Icons**.
-2. **Backend**: REST API performa tinggi berbasis **Go (Golang)** menggunakan framework **Gin**. Mengelola antrean worker pengiriman latar belakang (_goroutine worker_) dan state sesi WhatsApp.
-3. **WAHA (WhatsApp HTTP API)**: Engine server WhatsApp (_Core WEBJS / Chromium_) yang menangani protokol WhatsApp Web, autentikasi sesi QR, dan pengiriman pesan.
+1. **Frontend (`blast-frontend`)**: Web UI React 19 + Vite yang di-serve via **Nginx** (port 5173). Nginx secara otomatis mem-proxy request `/api/` ke backend container (port 8082) sehingga bebas dari isu CORS.
+2. **Backend (`blast-backend`)**: REST API performa tinggi berbasis **Go (Golang Gin)** (port 8082). Mengelola background goroutine worker pengiriman massal dengan delay acak aman dan terhubung ke server WAHA yang ada.
 
 ```
-┌───────────────────────┐         HTTP / JSON          ┌───────────────────────┐
-│                       │ ───────────────────────────> │                       │
-│  Frontend (React UI)  │                              │ Backend (Golang Gin)  │
-│  http://localhost:5173│ <─────────────────────────── │ http://localhost:8080 │
-└───────────────────────┘     Progress Polling / QR    └───────────┬───────────┘
-                                                                   │
-                                                WAHA REST API Call │ (POST /api/sendText)
-                                                                   ▼
-                                                        ┌───────────────────────┐
-                                                        │      WAHA Server      │
-                                                        │ (WhatsApp HTTP API)   │
-                                                        └───────────┬───────────┘
-                                                                   │
-                                                        WhatsApp Web│ Protocol
-                                                                   ▼
-                                                        ┌───────────────────────┐
-                                                        │   Penerima WhatsApp   │
-                                                        │   (Tamu Undangan)     │
-                                                        └───────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│                   VPS Host (Docker)                    │
+│                                                        │
+│  ┌─────────────────────────┐                           │
+│  │     blast-frontend      │ (Port 5173)               │
+│  │   (React + Nginx Proxy) │ ──┐                       │
+│  └─────────────────────────┘   │                       │
+│                                │ Internal Proxy (/api) │
+│                                ▼                       │
+│  ┌─────────────────────────┐                           │
+│  │      blast-backend      │ (Port 8082)               │
+│  │    (Golang Gin API)     │ ──┐                       │
+│  └─────────────────────────┘   │                       │
+│                                │ Target WAHA Server    │
+│                                ▼                       │
+│                    [ Server WAHA Terpasang ]           │
+│                 (https://waha.weddingofandricica.me)   │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🐳 Panduan Deploy Docker di VPS (Rekomendasi Utama)
+
+Semua konfigurasi Docker (`docker-compose.yml`, `Dockerfile` Backend, `Dockerfile` Frontend, dan Nginx) sudah siap pakai.
+
+### 1. Menjalankan Kontainer
+
+Buka terminal di folder project `blast-message`, lalu jalankan:
+
+```bash
+docker-compose up -d --build
+```
+
+### 2. Memeriksa Status Kontainer
+
+```bash
+docker ps
+```
+Pastikan kontainer berstatus **Up**:
+* `blast-frontend` $\rightarrow$ `0.0.0.0:5173`
+* `blast-backend` $\rightarrow$ `0.0.0.0:8082`
+
+### 3. Mengakses Aplikasi
+
+* **Web UI Dashboard:** Buka browser di `http://IP_VPS:5173` atau `http://localhost:5173`.
+* **API Backend:** `http://IP_VPS:8082/api`
+
+### 4. Perintah Berguna Lainnya
+
+```bash
+# Melihat log realtime
+docker-compose logs -f
+
+# Melihat log khusus backend
+docker logs -f blast-backend
+
+# Restart kontainer
+docker-compose restart
+
+# Mematikan kontainer
+docker-compose down
 ```
 
 ---
 
 ## 🔑 Penjelasan Environment Variables (.env)
 
-Sistem ini memiliki **dua tempat file `.env`**: satu di folder `backend/` dan satu di folder `frontend/`.
-
-### 1. Backend: `backend/.env`
-
-File ini mengatur koneksi backend Go ke server engine WAHA dan port server backend lokal.
-
-Contoh isi file `backend/.env`:
+File `.env` di root direktori mengatur port dan alamat server WAHA:
 
 ```env
-WAHA_BASE_URL=link_server_waha
-WAHA_API_KEY=secret_api_key
-PORT=8080
+FRONTEND_PORT=5173
+BACKEND_PORT=8082
+WAHA_BASE_URL=https://waha.weddingofandricica.me
+WAHA_API_KEY=Lollipop5.0qwerty244
 ```
 
-| Variabel            | Keterangan & Kemana Arahnya                                                                                                                                                                                                                                          | Contoh Nilai                                                 |
-| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------- |
-| **`WAHA_BASE_URL`** | **URL server WAHA (WhatsApp HTTP API)** yang sedang berjalan. Backend Go akan menembak endpoint seperti `/api/sessions`, `/api/sendText`, dan `/auth/qr` ke URL ini. Jika Anda menjalankan WAHA di VPS/domain sendiri atau Docker lokal, arahkan ke alamat tersebut. | `https://waha.mohaproject.tech` atau `http://localhost:3000` |
-| **`WAHA_API_KEY`**  | **Kunci rahasia (API Key / Token)** untuk mengamankan akses ke WAHA. Backend Go akan menyisipkan nilai ini ke header HTTP `X-Api-Key`. Nilai ini harus sama dengan konfigurasi `WAHA_API_KEY` di server WAHA Anda.                                                   | `Lollipop5.0qwerty244`                                       |
-| **`PORT`**          | **Port lokal** tempat server backend Golang Gin berjalan di komputer/server Anda.                                                                                                                                                                                    | `8080`                                                       |
+| Variabel | Deskripsi | Default |
+| :--- | :--- | :--- |
+| **`FRONTEND_PORT`** | Port akses Web UI di browser | `5173` |
+| **`BACKEND_PORT`** | Port API Golang | `8082` |
+| **`WAHA_BASE_URL`** | URL target server WAHA yang ada | `https://waha.weddingofandricica.me` |
+| **`WAHA_API_KEY`** | Token keamanan WAHA | `Lollipop5.0qwerty244` |
 
 ---
 
-### 2. Frontend: `frontend/.env` _(Opsional, default fallback otomatis)_
+## 🛠 Panduan Setup Manual (Tanpa Docker)
 
-File ini mengatur kemana frontend React harus menembak API backend Golang.
-
-Contoh isi file `frontend/.env`:
-
-```env
-VITE_API_BASE_URL=http://localhost:8080/api
-```
-
-| Variabel                | Keterangan & Kemana Arahnya                                                                                                                                                                                                                                     | Contoh Nilai                                                            |
-| :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- |
-| **`VITE_API_BASE_URL`** | **URL API Base Backend Golang**. Mengarahkan panggilan Axios frontend ke router backend Gin. Jika tidak diisi, frontend otomatis default ke `http://localhost:8080/api`. Jika di-deploy ke production (misal Vercel / VPS), ubah ke domain backend publik Anda. | `http://localhost:8080/api` atau `https://api-blast.domainanda.com/api` |
-
----
-
-## 💻 Prasyarat Sistem (Prerequisites)
-
-Sebelum menjalankan aplikasi, pastikan perangkat Anda telah terinstall:
-
-- **Go**: Minimal versi 1.20+ ([Download Go](https://go.dev/dl/))
-- **Node.js**: Minimal versi 18+ ([Download Node.js](https://nodejs.org/))
-- **Package Manager**: `pnpm` (direkomendasikan) atau `npm`
-- **Instance Server WAHA**: Server WAHA yang aktif dan dapat diakses (self-hosted via Docker atau cloud).
-
----
-
-## 🛠 Panduan Setup dari Nol (Step-by-Step)
+Jika ingin menjalankan aplikasi secara langsung di terminal lokal (development):
 
 ### 1. Setup Backend (Golang)
 
-1. Buka terminal dan masuk ke direktori `backend`:
-
+1. Masuk ke direktori `backend`:
    ```bash
    cd backend
-   ```
-
-2. Buat file `.env` dari template:
-
-   ```bash
-   # Di Windows PowerShell:
-   Copy-Item .env.example .env
-
-   # Atau di Linux / Mac:
-   cp .env.example .env
-   ```
-
-3. Sesuaikan isi file `backend/.env` dengan URL dan API Key WAHA Anda:
-
-   ```env
-   WAHA_BASE_URL=https://waha.mohaproject.tech
-   WAHA_API_KEY=Lollipop5.0qwerty244
-   PORT=8080
-   ```
-
-4. Unduh dependency Go:
-
-   ```bash
    go mod download
-   ```
-
-5. Jalankan backend:
-   ```bash
    go run main.go
    ```
-   _Jika berhasil, Anda akan melihat log:_
-   ```text
-   Starting WAHA Broadcast Backend Server...
-   Listening on http://localhost:8080
-   ```
-
----
+   Backend akan berjalan di `http://localhost:8082`.
 
 ### 2. Setup Frontend (React + Vite)
 
-1. Buka terminal baru dan masuk ke direktori `frontend`:
-
+1. Masuk ke direktori `frontend`:
    ```bash
    cd frontend
-   ```
-
-2. Buat file `.env` (opsional):
-
-   ```bash
-   # Di Windows PowerShell:
-   Copy-Item .env.example .env
-
-   # Atau di Linux / Mac:
-   cp .env.example .env
-   ```
-
-3. Install semua package dependency:
-
-   ```bash
    pnpm install
-   # atau jika menggunakan npm:
-   npm install
-   ```
-
-4. Jalankan server development:
-
-   ```bash
    pnpm dev
-   # atau:
-   npm run dev
    ```
-
-5. Buka browser dan akses URL lokal yang tampil:
-   ```text
-   http://localhost:5173
-   ```
+   Frontend akan berjalan di `http://localhost:5173` dan otomatis mem-proxy request `/api` ke `http://localhost:8082`.
 
 ---
 
@@ -195,7 +143,7 @@ Sebelum menjalankan aplikasi, pastikan perangkat Anda telah terinstall:
 
 1. Di kartu **Status WhatsApp**, klik tombol **"Hubungkan WhatsApp"** atau **"Scan QR Code"**.
 2. Modal QR Code akan muncul otomatis me-refresh kode QR dari server WAHA.
-3. Buka WhatsApp di smartphone Anda: **Menu Titik Tiga / Pengaturan > Perangkat Tertaut > Tautkan Perangkat**, lalu arahkan kamera ke layar.
+3. Buka WhatsApp di HP: **Menu Titik Tiga / Pengaturan > Perangkat Tertaut > Tautkan Perangkat**, lalu arahkan kamera ke layar.
 4. Setelah terhubung, status akan berubah menjadi **"WORKING" (Online)**.
 
 ### 2. Konfigurasi Format Link Undangan
@@ -281,17 +229,8 @@ Agar link undangan menampilkan **kartu metadata (judul, deskripsi ringkas, dan g
    </head>
    ```
 
-   > **Tips Gambar `og:image`:**
-   >
-   > - **Resolusi Rekomendasi:** 1200 × 630 px (Rasio 1.91:1) atau 600 × 315 px.
-   > - **Ukuran File:** Di bawah 300 KB format `.jpg` atau `.png`.
-   > - **URL:** Wajib menggunakan protokol `https://` absolut.
-
 4. **Hindari Spasi Mentah di URL**:
-   Jangan gunakan spasi kosong di tengah URL (misal `?to=Budi Santoso`), karena WhatsApp memotong tautan pada spasi pertama. Gunakan `{nama_encoded}` (`?to=Budi%20Santoso`) atau `{slug}` (`/tamu/budi-santoso`).
-
-5. **Kebijakan Anti-Spam WhatsApp di Sisi Tamu**:
-   Jika nomor pengirim belum disimpan di buku kontak penerima (_unknown contact_), aplikasi WhatsApp di HP penerima kadang secara bawaan menyembunyikan gambar kartu preview hingga penerima berinteraksi atau menyimpan kontak.
+   Gunakan `{nama_encoded}` (`?to=Wulan%20%26%20Partner`) atau `{slug}` (`/tamu/wulan-partner`).
 
 ---
 
@@ -300,69 +239,27 @@ Agar link undangan menampilkan **kartu metadata (judul, deskripsi ringkas, dan g
 ```text
 blast-message/
 ├── README.md                      # Dokumentasi komprehensif project ini
-├── backend/                       # Server Backend (Golang Gin)
-│   ├── .env                       # Konfigurasi environment backend (WAHA URL & Key)
-│   ├── .env.example               # Contoh template file .env backend
+├── docker-compose.yml             # Konfigurasi orkestrasi kontainer Docker (Backend & Frontend)
+├── .env                           # File konfigurasi environment root
+├── .env.example                   # Contoh template file .env root
+├── backend/                       # Server Backend (Golang Gin - Port 8082)
+│   ├── Dockerfile                 # Multi-stage build Go binary & runtime Alpine
+│   ├── .dockerignore
 │   ├── main.go                    # Entry point aplikasi backend
 │   ├── go.mod                     # Go module dependencies
-│   ├── client/
-│   │   └── waha.go                # Klien HTTP terintegrasi ke WAHA API
-│   ├── config/
-│   │   └── config.go              # Parser & loader file environment (.env)
-│   ├── handlers/
-│   │   ├── session.go             # Handler inisialisasi sesi, QR, & logout
-│   │   └── broadcast.go           # Handler memulai broadcast & cek progres
-│   ├── models/
-│   │   └── types.go               # Struct data model (Request, Log, Progress, WAHA Payload)
-│   ├── router/
-│   │   └── router.go              # Registrasi rute API Gin & middleware CORS
-│   └── services/
-│       └── broadcast_worker.go    # Background worker, rate limiting, delay, & parsing variabel
-└── frontend/                      # Client Web UI (React + Vite + Tailwind)
-    ├── .env.example               # Contoh template .env frontend (API URL)
-    ├── package.json               # Dependensi frontend & script runner
-    ├── vite.config.js             # Konfigurasi build Vite & port 5173
+│   ├── client/waha.go             # Klien HTTP ke WAHA API
+│   ├── config/config.go           # Loader konfigurasi .env
+│   ├── handlers/                  # Handler API sesi & broadcast
+│   ├── models/types.go            # Struct data model
+│   └── services/broadcast_worker.go # Worker background & parsing variabel {code}
+└── frontend/                      # Client Web UI (React + Vite + Tailwind - Port 5173)
+    ├── Dockerfile                 # Multi-stage build Node & Nginx
+    ├── nginx.conf                 # Nginx config & reverse-proxy ke backend:8082
+    ├── .dockerignore
+    ├── package.json               # Dependensi frontend
+    ├── vite.config.js             # Konfigurasi build Vite & proxy dev
     └── src/
-        ├── App.jsx                # Komponen root aplikasi & state management utama
-        ├── api/
-        │   └── axiosClient.js     # Axios instance terarah ke backend Go
-        ├── components/
-        │   ├── Navbar.jsx         # Header navigasi & branding aplikasi
-        │   ├── SessionCard.jsx    # Status sesi WhatsApp, koneksi, & tombol logout
-        │   ├── QrModal.jsx        # Dialog modal scanner QR Code WhatsApp
-        │   ├── LinkConfigCard.jsx # Pengaturan format tautan undangan dinamis
-        │   ├── GuestListInput.jsx # Manajemen daftar tamu (Excel upload / teks manual)
-        │   ├── TemplateEditor.jsx # Editor template pesan, emoji picker, & tag variabel
-        │   ├── PhonePreviewModal.jsx # Mockup simulasi tampilan WhatsApp di HP
-        │   ├── StatsBar.jsx       # Statistik ringkasan tamu & estimasi waktu kirim
-        │   └── BroadcastTracker.jsx # Realtime progress bar & log pengiriman per tamu
-        └── utils/
-            └── helpers.js         # Parser file Excel, normalisasi nomor HP, slugifier
+        ├── App.jsx                # Komponen root & state management
+        ├── components/            # UI components (Template, GuestList, Tracker, dll)
+        └── utils/helpers.js       # Parser Excel (dengan kolom Code) & normalisasi
 ```
-
----
-
-## 📡 Daftar Endpoint API Backend
-
-Base URL lokal: `http://localhost:8080/api`
-
-| Method | Endpoint                         | Deskripsi                                                                             |
-| :----- | :------------------------------- | :------------------------------------------------------------------------------------ |
-| `POST` | `/sessions/init`                 | Menginisialisasi sesi baru di WAHA atau mengambil sesi yang tersimpan.                |
-| `GET`  | `/sessions/:id/qr`               | Mengambil gambar QR Code / data URI base64 untuk login WhatsApp.                      |
-| `GET`  | `/sessions/:id/status`           | Mengecek status sesi terkini (`WORKING`, `SCAN_QR_CODE`, `STOPPED`).                  |
-| `POST` | `/sessions/:id/restart`          | Me-restart sesi yang terputus atau gagal.                                             |
-| `POST` | `/sessions/:id/logout`           | Melakukan logout dan membersihkan sesi di server WAHA.                                |
-| `POST` | `/messages/broadcast`            | Memulai pengiriman broadcast massal latar belakang (_background worker_).             |
-| `GET`  | `/messages/broadcast/:id/status` | Mengambil status progres pengiriman broadcast realtime beserta log rincian tiap tamu. |
-
----
-
-## 💡 Troubleshooting Umum
-
-- **QR Code tidak muncul / timeout**:
-  Periksa apakah `WAHA_BASE_URL` di `backend/.env` dapat diakses dari browser/curl, dan pastikan `WAHA_API_KEY` telah sesuai.
-- **Port 8080 sudah digunakan (_bind address already in use_)**:
-  Ganti `PORT=8081` di `backend/.env` dan sesuaikan `VITE_API_BASE_URL=http://localhost:8081/api` di frontend.
-- **Pesan gagal terkirim (Status FAILED)**:
-  Cek pesan error di log pengiriman. Jika muncul _Session status is not as expected_, pastikan status koneksi WhatsApp Anda masih berstatus **WORKING** dan tidak logout dari HP.
