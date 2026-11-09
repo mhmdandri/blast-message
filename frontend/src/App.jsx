@@ -11,6 +11,26 @@ import BroadcastTracker from "./components/BroadcastTracker";
 import { generateGuestLink } from "./utils/helpers";
 import { Shield, Sparkles } from "lucide-react";
 
+export const DEFAULT_WEDDING_TEMPLATE = `Kepada Yth.
+{nama_tamu}
+
+Assalamualaikum Warahmatullahi Wabarakatuh
+
+Dengan memohon Rahmat dan Ridho Allah SWT, serta tanpa mengurangi rasa hormat melalui pesan ini kami mengundang Bapak/Ibu/Saudara/I untuk menghadiri acara pernikahan kami :
+
+Cica Purwanti, S.Pd, Gr & Muhamad Andriyansyah, S.Kom
+
+Berikut link undangan kami, untuk info lengkap acara bisa kunjungi :
+{link_undangan}
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+
+Terima kasih banyak atas perhatiannya.
+Wassalamualaikum Warahmatullahi Wabarakatuh
+
+Salam hangat dari kami sekeluarga.
+Cica & Andri`;
+
 export default function App() {
   // Session State
   const [sessionId, setSessionId] = useState(
@@ -47,9 +67,17 @@ export default function App() {
     { id: "g1", name: "Wulan & Partner", phone: "08123456789", code: "01197" },
     { id: "g2", name: "Budi Santoso", phone: "08571234567", code: "01198" },
   ]);
-  const [templateMessage, setTemplateMessage] = useState(
-    "Halo {nama},\n\nKami mengundang Anda untuk menghadiri acara Pernikahan & Resepsi Digital kami.\nSilakan buka tautan undangan berikut:\n{link}\n\nMohon konfirmasi kehadiran Anda. Terima kasih!",
-  );
+  const [templateMessage, setTemplateMessage] = useState(() => {
+    const saved = localStorage.getItem("waha_template_message");
+    if (!saved || saved.includes("Pernikahan & Resepsi Digital") || saved.includes("Halo {nama}")) {
+      return DEFAULT_WEDDING_TEMPLATE;
+    }
+    return saved;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("waha_template_message", templateMessage);
+  }, [templateMessage]);
   const [broadcastId, setBroadcastId] = useState("");
   const [broadcastProgress, setBroadcastProgress] = useState(null);
   const [isSending, setIsSending] = useState(false);
@@ -209,6 +237,14 @@ export default function App() {
         setIsSending(false);
         if (broadcastPollRef.current) clearInterval(broadcastPollRef.current);
         showToast("Seluruh pengiriman broadcast selesai!", "success");
+      } else if (
+        resp.data.status === "STOPPED_SESSION_FAILED" ||
+        resp.data.status?.startsWith("STOPPED") ||
+        resp.data.status === "FAILED"
+      ) {
+        setIsSending(false);
+        if (broadcastPollRef.current) clearInterval(broadcastPollRef.current);
+        showToast("Pengiriman broadcast terhenti: Sesi WhatsApp terputus atau gagal.", "error");
       }
     } catch (err) {
       console.error("Failed to poll broadcast progress:", err);
@@ -329,6 +365,7 @@ export default function App() {
             template={templateMessage}
             setTemplate={setTemplateMessage}
             linkFormat={linkFormat}
+            defaultTemplate={DEFAULT_WEDDING_TEMPLATE}
           />
 
           {/* Right Column: Guest List Manager */}

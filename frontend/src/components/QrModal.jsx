@@ -4,8 +4,6 @@ import {
   RefreshCw,
   Smartphone,
   QrCode,
-  ShieldCheck,
-  CheckCircle2,
 } from "lucide-react";
 
 export default function QrModal({
@@ -14,7 +12,6 @@ export default function QrModal({
   qrCode,
   isLoading,
   onRefreshQr,
-  status,
   sessionId,
 }) {
   if (!isOpen) return null;

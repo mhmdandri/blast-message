@@ -4,7 +4,6 @@ import {
   Smartphone,
   CheckCheck,
   ExternalLink,
-  ShieldCheck,
   Lock,
 } from "lucide-react";
 import { generateGuestLink, slugify } from "../utils/helpers";
@@ -22,14 +21,17 @@ export default function PhonePreviewModal({
 
   const generatedLink = generateGuestLink(linkFormat, guestName, guestPhone, guestCode);
   const formattedMessage = template
+    .replace(/\{nama_tamu\}/gi, guestName)
     .replace(/\{nama\}/gi, guestName)
     .replace(/\{name\}/gi, guestName)
     .replace(/\{nomor\}/gi, guestPhone)
     .replace(/\{phone\}/gi, guestPhone)
     .replace(/\{slug\}/gi, slugify(guestName))
     .replace(/\{nama_encoded\}/gi, encodeURIComponent(guestName))
+    .replace(/\{code_encoded\}/gi, encodeURIComponent(guestCode))
     .replace(/\{code\}/gi, guestCode)
     .replace(/\{kode\}/gi, guestCode)
+    .replace(/\{link_undangan\}/gi, generatedLink)
     .replace(/\{link\}/gi, generatedLink)
     .replace(/\{url\}/gi, generatedLink);
 

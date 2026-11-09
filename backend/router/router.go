@@ -26,6 +26,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func SetupRouter(sessionHandler *handlers.SessionHandler, broadcastHandler *handlers.BroadcastHandler) *gin.Engine {
 	r := gin.Default()
+	_ = r.SetTrustedProxies(nil)
 
 	// Apply CORS
 	r.Use(CORSMiddleware())

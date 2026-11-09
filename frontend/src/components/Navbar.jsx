@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Send,
   QrCode,
   CheckCircle2,
   AlertCircle,

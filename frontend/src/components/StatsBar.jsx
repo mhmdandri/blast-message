@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Users, Link2, FileText, CheckCircle2, QrCode, AlertCircle } from 'lucide-react';
+import { Users, Link2, FileText, CheckCircle2, QrCode, AlertCircle } from 'lucide-react';
 
 export default function StatsBar({ sessionStatus, guestCount, linkFormat, templateLength }) {
   const getStatusInfo = () => {

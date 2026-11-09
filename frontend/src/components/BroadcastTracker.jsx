@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck, RefreshCw, BarChart2, Download, Filter } from 'lucide-react';
+import { Send, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck, RefreshCw, BarChart2, Download } from 'lucide-react';
 import { formatLogTime } from '../utils/helpers';
 
 export default function BroadcastTracker({
@@ -60,6 +60,8 @@ export default function BroadcastTracker({
                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                     : broadcastProgress.status === 'IN_PROGRESS'
                     ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 animate-pulse'
+                    : broadcastProgress.status === 'STOPPED_SESSION_FAILED'
+                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
                     : 'bg-slate-800 text-slate-400'
                 }`}
               >
@@ -67,6 +69,8 @@ export default function BroadcastTracker({
                   ? 'Selesai'
                   : broadcastProgress.status === 'IN_PROGRESS'
                   ? 'Sedang Mengirim...'
+                  : broadcastProgress.status === 'STOPPED_SESSION_FAILED'
+                  ? 'Terhenti (Sesi Terputus)'
                   : broadcastProgress.status}
               </span>
             )}

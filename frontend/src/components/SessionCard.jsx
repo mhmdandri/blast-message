@@ -1,8 +1,6 @@
 import {
   QrCode,
-  Smartphone,
   CheckCircle,
-  ShieldCheck,
   Zap,
   LogOut,
   RefreshCw,

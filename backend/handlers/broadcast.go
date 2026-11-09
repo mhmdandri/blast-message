@@ -56,7 +56,7 @@ func (h *BroadcastHandler) StartBroadcast(c *gin.Context) {
 		return
 	}
 
-	if sessionInfo == nil || sessionInfo.Status != "WORKING" {
+	if sessionInfo == nil || (sessionInfo.Status != "WORKING" && sessionInfo.Status != "CONNECTED") {
 		currentStatus := "UNKNOWN"
 		if sessionInfo != nil {
 			currentStatus = sessionInfo.Status

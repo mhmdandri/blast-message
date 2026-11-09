@@ -14,12 +14,11 @@ import {
   Trash2,
   FileText,
   AlertCircle,
-  Sparkles,
 } from "lucide-react";
 import { generateGuestLink, slugify } from "../utils/helpers";
 import PhonePreviewModal from "./PhonePreviewModal";
 
-export default function TemplateEditor({ template, setTemplate, linkFormat }) {
+export default function TemplateEditor({ template, setTemplate, linkFormat, defaultTemplate }) {
   const [copied, setCopied] = useState(false);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const textareaRef = useRef(null);
@@ -27,22 +26,23 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
   // Template Presets
   const templatePresets = [
     {
-      name: "Resmi / Formal",
-      desc: "Bahasa sopan & terstruktur",
+      name: "Default (Cica & Andri)",
+      desc: "Template resmi pernikahan Cica & Andri",
       content:
-        "Kepada Yth. {nama},\n\nTanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara Pernikahan kami.\n\nDetail acara dan konfirmasi kehadiran (RSVP) dapat diakses melalui tautan undangan berikut:\n{link}\n\nMerupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\nTerima kasih.\nSalam hangat dari kami sekeluarga.",
+        defaultTemplate ||
+        `Kepada Yth.\n{nama_tamu}\n\nAssalamualaikum Warahmatullahi Wabarakatuh\n\nDengan memohon Rahmat dan Ridho Allah SWT, serta tanpa mengurangi rasa hormat melalui pesan ini kami mengundang Bapak/Ibu/Saudara/I untuk menghadiri acara pernikahan kami :\n\nCica Purwanti, S.Pd, Gr & Muhamad Andriyansyah, S.Kom\n\nBerikut link undangan kami, untuk info lengkap acara bisa kunjungi :\n{link_undangan}\n\nMerupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\nTerima kasih banyak atas perhatiannya.\nWassalamualaikum Warahmatullahi Wabarakatuh\n\nSalam hangat dari kami sekeluarga.\nCica & Andri`,
     },
     {
       name: "Santai & Akrab",
       desc: "Untuk teman/kerabat dekat",
       content:
-        "Halo {nama}! ✨💍\n\nKabar bahagia untuk kita semua! Kami mengundang kamu untuk hadir dan merayakan momen bahagia pernikahan kami.\n\nBuka undangan digital lengkapnya di sini ya:\n{link}\n\nJangan lupa konfirmasi kehadiranmu ya. Sampai jumpa di hari H! 🎉🙏",
+        "Halo {nama_tamu}! ✨💍\n\nKabar bahagia untuk kita semua! Kami mengundang kamu untuk hadir dan merayakan momen bahagia pernikahan kami (Cica & Andri).\n\nBuka undangan digital lengkapnya di sini ya:\n{link_undangan}\n\nJangan lupa konfirmasi kehadiranmu ya. Sampai jumpa di hari H! 🎉🙏",
     },
     {
       name: "Ringkas & Cepat",
       desc: "Singkat & to the point",
       content:
-        "Undangan Pernikahan Digital 💌\n\nKepada: {nama}\n\nSilakan buka tautan undangan digital kami di sini:\n{link}\n\nTerima kasih atas doa restu dan kehadirannya! 🙏",
+        "Undangan Pernikahan Digital 💌\n\nKepada Yth. {nama_tamu}\n\nSilakan buka tautan undangan digital kami di sini:\n{link_undangan}\n\nTerima kasih atas doa restu dan kehadirannya! 🙏\n- Cica & Andri -",
     },
   ];
 
@@ -114,12 +114,12 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
 
   // Variable definitions with info
   const variables = [
-    { tag: "{nama}", label: "Nama Tamu", desc: "Contoh: Wulan & Partner", color: "indigo" },
-    { tag: "{link}", label: "Link Undangan", desc: "Tautan unik per tamu", color: "emerald" },
+    { tag: "{nama_tamu}", label: "Nama Tamu", desc: "Contoh: Wulan & Partner", color: "indigo" },
+    { tag: "{link_undangan}", label: "Link Undangan", desc: "Tautan unik per tamu", color: "emerald" },
     { tag: "{code}", label: "Kode Tamu", desc: "Contoh: 01197", color: "amber" },
     { tag: "{nomor}", label: "No. WhatsApp", desc: "08xxx / 628xxx", color: "purple" },
-    { tag: "{slug}", label: "Slug Nama", desc: "wulan-partner", color: "blue" },
-    { tag: "{nama_encoded}", label: "Nama Query (%20)", desc: "Wulan%20%26%20Partner", color: "sky" },
+    { tag: "{nama}", label: "Nama (alias)", desc: "Alias untuk {nama_tamu}", color: "blue" },
+    { tag: "{link}", label: "Link (alias)", desc: "Alias untuk {link_undangan}", color: "sky" },
   ];
 
   // Preview with sample data
@@ -129,14 +129,17 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
   const sampleLink = generateGuestLink(linkFormat, sampleName, samplePhone, sampleCode);
 
   const previewText = template
+    .replace(/\{nama_tamu\}/gi, sampleName)
     .replace(/\{nama\}/gi, sampleName)
     .replace(/\{name\}/gi, sampleName)
     .replace(/\{nomor\}/gi, samplePhone)
     .replace(/\{phone\}/gi, samplePhone)
     .replace(/\{slug\}/gi, slugify(sampleName))
     .replace(/\{nama_encoded\}/gi, encodeURIComponent(sampleName))
+    .replace(/\{code_encoded\}/gi, encodeURIComponent(sampleCode))
     .replace(/\{code\}/gi, sampleCode)
     .replace(/\{kode\}/gi, sampleCode)
+    .replace(/\{link_undangan\}/gi, sampleLink)
     .replace(/\{link\}/gi, sampleLink)
     .replace(/\{url\}/gi, sampleLink);
 
@@ -147,8 +150,8 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
   };
 
   // Variable checklist
-  const hasNameVar = /\{nama\}|\{name\}|\{slug\}|\{nama_encoded\}/i.test(template);
-  const hasLinkVar = /\{link\}|\{url\}/i.test(template);
+  const hasNameVar = /\{nama_tamu\}|\{nama\}|\{name\}|\{slug\}|\{nama_encoded\}/i.test(template);
+  const hasLinkVar = /\{link_undangan\}|\{link\}|\{url\}/i.test(template);
 
   return (
     <div className="glass-card rounded-2xl p-4 sm:p-6 border border-slate-800 flex flex-col h-full shadow-lg space-y-4">
@@ -285,6 +288,16 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
             ))}
           </div>
 
+          {/* Reset to default template */}
+          <button
+            type="button"
+            onClick={() => setTemplate(defaultTemplate)}
+            title="Kembalikan ke template default pernikahan"
+            className="p-1.5 rounded-lg hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 transition-colors cursor-pointer shrink-0"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
           {/* Clear text button */}
           <button
             type="button"
@@ -303,7 +316,7 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
           ref={textareaRef}
           value={template}
           onChange={(e) => setTemplate(e.target.value)}
-          placeholder="Ketik pesan Anda di sini... Gunakan variabel seperti {nama}, {link}, dan {code} untuk personalisasi otomatis."
+          placeholder="Ketik pesan Anda di sini... Gunakan variabel seperti {nama_tamu}, {link_undangan}, dan {code} untuk personalisasi otomatis."
           rows={7}
           className="w-full h-full min-h-40 sm:min-h-48 p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 text-xs sm:text-sm placeholder-slate-500 resize-none outline-none font-sans leading-relaxed"
         />
@@ -319,8 +332,8 @@ export default function TemplateEditor({ template, setTemplate, linkFormat }) {
         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
           <div className="text-[11px] leading-tight">
-            {!hasLinkVar && <span>Saran: Tambahkan variabel <code className="font-mono font-bold text-amber-200">&#123;link&#125;</code> agar tamu dapat membuka undangan mereka. </span>}
-            {!hasNameVar && <span>Tambahkan <code className="font-mono font-bold text-amber-200">&#123;nama&#125;</code> untuk menyapa tamu secara personal.</span>}
+            {!hasLinkVar && <span>Saran: Tambahkan variabel <code className="font-mono font-bold text-amber-200">&#123;link_undangan&#125;</code> agar tamu dapat membuka undangan mereka. </span>}
+            {!hasNameVar && <span>Tambahkan <code className="font-mono font-bold text-amber-200">&#123;nama_tamu&#125;</code> untuk menyapa tamu secara personal.</span>}
           </div>
         </div>
       )}

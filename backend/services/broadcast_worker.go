@@ -28,15 +28,24 @@ func NewBroadcastService(wahaClient *client.WahaClient) *BroadcastService {
 	}
 }
 
+var (
+	reNonDigits    = regexp.MustCompile(`\D`)
+	reSlugChars    = regexp.MustCompile(`[^\w\s-]`)
+	reSlugSpaces   = regexp.MustCompile(`[\s_]+`)
+	reNamaTamu     = regexp.MustCompile(`(?i)\{nama_tamu\}`)
+	reLinkUndangan = regexp.MustCompile(`(?i)\{link_undangan\}`)
+)
+
 // NormalizePhone converts phone numbers to international WhatsApp format (628xxx@c.us)
 func NormalizePhone(phone string) string {
-	// Remove non-digit characters
-	re := regexp.MustCompile(`\D`)
-	cleaned := re.ReplaceAllString(phone, "")
+	cleaned := reNonDigits.ReplaceAllString(phone, "")
+	if len(cleaned) == 0 {
+		return ""
+	}
 
 	if strings.HasPrefix(cleaned, "0") {
 		cleaned = "62" + cleaned[1:]
-	} else if !strings.HasPrefix(cleaned, "62") && len(cleaned) > 0 {
+	} else if strings.HasPrefix(cleaned, "8") {
 		cleaned = "62" + cleaned
 	}
 
@@ -50,18 +59,20 @@ func NormalizePhone(phone string) string {
 // Slugify converts string to URL friendly slug (e.g. "Budi Santoso" -> "budi-santoso")
 func Slugify(s string) string {
 	s = strings.ToLower(strings.TrimSpace(s))
-	re := regexp.MustCompile(`[^\w\s-]`)
-	s = re.ReplaceAllString(s, "")
-	reSpace := regexp.MustCompile(`[\s_]+`)
-	return reSpace.ReplaceAllString(s, "-")
+	s = reSlugChars.ReplaceAllString(s, "")
+	return reSlugSpaces.ReplaceAllString(s, "-")
 }
 
-// FormatMessage replaces placeholders like {nama}, {name}, {nomor}, {phone}, {link}, {url}, {slug}, {nama_encoded}, {code}, {kode}
+// FormatMessage replaces placeholders like {nama_tamu}, {link_undangan}, {nama}, {name}, {nomor}, {phone}, {link}, {url}, {slug}, {nama_encoded}, {code}, {kode}
 func FormatMessage(template string, guest models.Guest) string {
 	msg := template
 	nameSlug := Slugify(guest.Name)
 	nameEncoded := strings.ReplaceAll(url.QueryEscape(guest.Name), "+", "%20")
 	codeEncoded := strings.ReplaceAll(url.QueryEscape(guest.Code), "+", "%20")
+
+	// Priority wedding template variables (case-insensitive)
+	msg = reNamaTamu.ReplaceAllLiteralString(msg, guest.Name)
+	msg = reLinkUndangan.ReplaceAllLiteralString(msg, guest.Link)
 
 	msg = strings.ReplaceAll(msg, "{nama}", guest.Name)
 	msg = strings.ReplaceAll(msg, "{NAMA}", guest.Name)
@@ -131,6 +142,18 @@ func (s *BroadcastService) runWorker(broadcastID string, req models.BroadcastReq
 		time.Sleep(time.Duration(delayMs) * time.Millisecond)
 
 		chatID := NormalizePhone(guest.Phone)
+		if chatID == "" {
+			s.mu.Lock()
+			if progress, exists := s.store[broadcastID]; exists {
+				progress.Failed++
+				progress.Logs[i].Status = "FAILED"
+				progress.Logs[i].Error = "Nomor telepon kosong atau tidak valid"
+				progress.Logs[i].SentAt = time.Now()
+			}
+			s.mu.Unlock()
+			continue
+		}
+
 		messageText := FormatMessage(req.TemplateMessage, guest)
 
 		enableLinkPreview := true

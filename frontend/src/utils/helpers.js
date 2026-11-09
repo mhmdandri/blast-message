@@ -8,7 +8,7 @@ export function normalizePhoneDisplay(phone) {
   let digits = String(phone).replace(/\D/g, "");
   if (digits.startsWith("0")) {
     digits = "62" + digits.slice(1);
-  } else if (!digits.startsWith("62") && digits.length > 0) {
+  } else if (digits.startsWith("8")) {
     digits = "62" + digits;
   }
   return digits;
@@ -112,6 +112,7 @@ export function generateGuestLink(linkFormat, name, phone, code = "") {
 
   link = link.replace(/\{nama_encoded\}/gi, nameEncoded);
   link = link.replace(/\{slug\}/gi, nameSlug);
+  link = link.replace(/\{nama_tamu\}/gi, nameRaw);
   link = link.replace(/\{nama\}/gi, nameRaw);
   link = link.replace(/\{name\}/gi, nameRaw);
   link = link.replace(/\{nomor\}/gi, phone || "");
