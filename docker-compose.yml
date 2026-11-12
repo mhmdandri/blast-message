@@ -6,8 +6,8 @@ services:
     image: blast-message-backend:latest
     container_name: blast-backend
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:${BACKEND_PORT:-8083}:8083"
+    expose:
+      - "8083"
     environment:
       - WAHA_BASE_URL=${WAHA_BASE_URL:-https://waha.weddingofandricica.me}
       - WAHA_API_KEY=${WAHA_API_KEY:-Lollipop5.0qwerty244}
@@ -26,8 +26,8 @@ services:
     image: blast-message-frontend:latest
     container_name: blast-frontend
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
+    expose:
+      - "5173"
     depends_on:
       - backend
     networks:
